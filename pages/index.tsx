@@ -99,7 +99,7 @@ export default function Dashboard() {
         ) : (
           <div className="mt-8 p-4 border rounded-lg shadow-md bg-blue-50">
             <h2 className="text-xl font-semibold mb-2">Welcome to Fairwinds!</h2>
-            <p>You haven't added your RV yet. Click on "My RV" to get started.</p>
+            <p>You haven&apos;t added your RV yet. Click on &quot;My RV&quot; to get started.</p>
           </div>
         )}
       </main>
