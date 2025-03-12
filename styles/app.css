@@ -1,12 +1,13 @@
 body {
   margin: 0;
-  background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
+  background: linear-gradient(180deg, #F5E6D3, #FFFFFF);
   display: flex;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   height: 100vh;
   width: 100vw;
   justify-content: center;
   align-items: center;
+  color: #1D3557; /* Text - Navy */
 }
 
 main {
@@ -22,13 +23,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #2B6CB0; /* Primary - Blue */
   cursor: pointer;
-  transition: border-color 0.25s;
-  color: white;
+  transition: border-color 0.25s, background-color 0.25s;
+  color: #FFFFFF; /* White */
 }
 button:hover {
-  border-color: #646cff;
+  border-color: #E76F51; /* Accent - Orange */
+  background-color: #E76F51; /* Accent - Orange */
 }
 button:focus,
 button:focus-visible {
@@ -43,23 +45,33 @@ ul {
   display: flex;
   flex-direction: column;
   margin: 8px 0;
-  border: 1px solid black;
+  border: 1px solid #1D3557; /* Text - Navy */
   gap: 1px;
-  background-color: black;
+  background-color: #1D3557; /* Text - Navy */
   border-radius: 8px;
   overflow: auto;
 }
 
 li {
-  background-color: white;
+  background-color: #FFFFFF; /* White */
   padding: 8px;
 }
 
 li:hover {
-  background: #dadbf9;
+  background: #F5E6D3; /* Background - Warm background */
 }
 
 a {
   font-weight: 800;
   text-decoration: none;
+  color: #2B6CB0; /* Primary - Blue */
+}
+
+a:hover {
+  color: #E76F51; /* Accent - Orange */
+}
+
+h1 {
+  color: #8B4513; /* Heading - Brown */
+  margin-bottom: 16px;
 }
