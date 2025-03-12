@@ -4,10 +4,12 @@ import NavBar from "@/components/common/layout/NavBar";
 import NavButton from "@/components/common/navigation/NavButton";
 import LoadingState from "@/components/common/ui/LoadingState";
 import ErrorBoundary from "@/components/common/ui/ErrorBoundary";
+import RVSummaryCard from "@/components/dashboard/RVSummaryCard";
 import { client, handleApiError } from "@/lib/api/amplify";
+import { RV } from "@/types/models";
 
 export default function Dashboard() {
-  const [userRV, setUserRV] = useState<any>(null);
+  const [userRV, setUserRV] = useState<RV | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, signOut } = useAuthenticator();
 
@@ -23,7 +25,35 @@ export default function Dashboard() {
         });
         
         if (rvData.data && rvData.data.length > 0) {
-          setUserRV(rvData.data[0]);
+          // Get the raw RV item from the API response
+          const rvItem = rvData.data[0];
+          
+          // Use a more aggressive type assertion approach
+          // First, create a basic RV object without photos
+          const typedRV = {
+            id: rvItem.id,
+            make: rvItem.make,
+            model: rvItem.model,
+            year: rvItem.year,
+            userId: rvItem.userId,
+          } as RV;
+          
+          // Then handle photos separately with explicit type checking
+          if (rvItem.photos && Array.isArray(rvItem.photos)) {
+            // Force cast to any to bypass TypeScript's type checking
+            const anyPhotos = rvItem.photos as any[];
+            // Filter out non-string values
+            const stringPhotos = anyPhotos
+              .filter(photo => typeof photo === 'string')
+              .map(photo => photo as string);
+              
+            if (stringPhotos.length > 0) {
+              typedRV.photos = stringPhotos;
+            }
+          }
+          setUserRV(typedRV);
+        } else {
+          setUserRV(null);
         }
         
         setLoading(false);
@@ -77,31 +107,10 @@ export default function Dashboard() {
           />
         </div>
 
-        {/* RV Summary Card - Show if user has an RV */}
-        {userRV ? (
-          <div className="mt-8 p-4 border rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-2">My RV</h2>
-            <p>
-              <span className="font-medium">Make:</span> {userRV.make}
-            </p>
-            <p>
-              <span className="font-medium">Model:</span> {userRV.model}
-            </p>
-            <p>
-              <span className="font-medium">Year:</span> {userRV.year}
-            </p>
-            {userRV.photos && userRV.photos.length > 0 && (
-              <p>
-                <span className="font-medium">Photos:</span> {userRV.photos.length}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="mt-8 p-4 border rounded-lg shadow-md bg-blue-50">
-            <h2 className="text-xl font-semibold mb-2">Welcome to Fairwinds!</h2>
-            <p>You haven&apos;t added your RV yet. Click on &quot;My RV&quot; to get started.</p>
-          </div>
-        )}
+        {/* RV Summary Card */}
+        <div className="mt-8">
+          <RVSummaryCard rv={userRV} />
+        </div>
       </main>
     </ErrorBoundary>
   );
