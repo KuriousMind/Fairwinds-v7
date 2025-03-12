@@ -1,15 +1,61 @@
 import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
-/*== STEP 1 ===============================================================
-The section below creates a Todo database table with a "content" field. Try
-adding a new "isDone" field as a boolean. The authorization rule below
-specifies that any user authenticated via an API key can "create", "read",
-"update", and "delete" any "Todo" records.
-=========================================================================*/
 const schema = a.schema({
-  Todo: a
+  User: a
     .model({
-      content: a.string(),
+      // Primary key
+      userId: a.id(),
+      email: a.string().required(),
+      // Relationship field - User has one RV
+      rv: a.hasOne("RV", "userId"),
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  RV: a
+    .model({
+      make: a.string().required(),
+      model: a.string().required(),
+      year: a.integer().required(),
+      // Array of strings for photos
+      photos: a.string().array(),
+      // Reference field for User
+      userId: a.string(),
+      // Relationships
+      user: a.belongsTo("User", "userId"),
+      documents: a.hasMany("Document", "rvId"),
+      maintenanceRecords: a.hasMany("MaintenanceRecord", "rvId"),
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  MaintenanceRecord: a
+    .model({
+      title: a.string().required(),
+      date: a.datetime().required(),
+      type: a.string().required(),
+      notes: a.string(),
+      // Array of strings for photos
+      photos: a.string().array(),
+      // Reference field for RV
+      rvId: a.string(),
+      // Relationships
+      rv: a.belongsTo("RV", "rvId"),
+      documents: a.hasMany("Document", "maintenanceRecordId"),
+    })
+    .authorization((allow) => [allow.owner()]),
+
+  Document: a
+    .model({
+      title: a.string().required(),
+      type: a.string().required(),
+      url: a.string().required(),
+      // Array of strings for tags
+      tags: a.string().array(),
+      // Reference fields for relationships
+      rvId: a.string(),
+      maintenanceRecordId: a.string(),
+      // Relationships
+      rv: a.belongsTo("RV", "rvId"),
+      maintenanceRecord: a.belongsTo("MaintenanceRecord", "maintenanceRecordId"),
     })
     .authorization((allow) => [allow.owner()]),
 });

@@ -1,47 +1,108 @@
 import { useState, useEffect } from "react";
-import { generateClient } from "aws-amplify/data";
 import { useAuthenticator } from "@aws-amplify/ui-react";
-import type { Schema } from "@/amplify/data/resource";
+import NavBar from "@/components/common/layout/NavBar";
+import NavButton from "@/components/common/navigation/NavButton";
+import LoadingState from "@/components/common/ui/LoadingState";
+import ErrorBoundary from "@/components/common/ui/ErrorBoundary";
+import { client, handleApiError } from "@/lib/api/amplify";
 
-const client = generateClient<Schema>();
-
-export default function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+export default function Dashboard() {
+  const [userRV, setUserRV] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const { user, signOut } = useAuthenticator();
 
-  function listTodos() {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }
-
+  // Fetch the user's RV data
   useEffect(() => {
-    listTodos();
-  }, []);
+    async function fetchUserRV() {
+      try {
+        setLoading(true);
+        
+        // List RVs associated with the current user
+        const rvData = await client.models.RV.list({
+          filter: { userId: { eq: user?.userId } }
+        });
+        
+        if (rvData.data && rvData.data.length > 0) {
+          setUserRV(rvData.data[0]);
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching RV data:", error);
+        handleApiError(error);
+        setLoading(false);
+      }
+    }
 
-  function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
-    });
+    if (user) {
+      fetchUserRV();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Display loading state while fetching data
+  if (loading) {
+    return <LoadingState fullScreen message="Loading your dashboard..." />;
   }
 
   return (
-    <main>
-      <h1>{user?.signInDetails?.loginId}'s todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <button onClick={signOut}>Sign out</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/gen2/start/quickstart/nextjs-pages-router/">
-          Review next steps of this tutorial.
-        </a>
-      </div>
-    </main>
+    <ErrorBoundary>
+      <main className="container mx-auto p-4">
+        <NavBar title="Fairwinds RV Dashboard">
+          <button 
+            onClick={signOut}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Sign out
+          </button>
+        </NavBar>
+
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mt-6">
+          {/* Main Navigation Cards */}
+          <NavButton 
+            href="/rv"
+            label="My RV"
+            isPrimary
+          />
+          
+          <NavButton 
+            href="/maintenance"
+            label="Maintenance"
+          />
+          
+          <NavButton 
+            href="/settings"
+            label="Settings"
+          />
+        </div>
+
+        {/* RV Summary Card - Show if user has an RV */}
+        {userRV ? (
+          <div className="mt-8 p-4 border rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">My RV</h2>
+            <p>
+              <span className="font-medium">Make:</span> {userRV.make}
+            </p>
+            <p>
+              <span className="font-medium">Model:</span> {userRV.model}
+            </p>
+            <p>
+              <span className="font-medium">Year:</span> {userRV.year}
+            </p>
+            {userRV.photos && userRV.photos.length > 0 && (
+              <p>
+                <span className="font-medium">Photos:</span> {userRV.photos.length}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="mt-8 p-4 border rounded-lg shadow-md bg-blue-50">
+            <h2 className="text-xl font-semibold mb-2">Welcome to Fairwinds!</h2>
+            <p>You haven't added your RV yet. Click on "My RV" to get started.</p>
+          </div>
+        )}
+      </main>
+    </ErrorBoundary>
   );
 }
