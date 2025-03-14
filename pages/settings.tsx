@@ -1,48 +1,120 @@
-import React from 'react';
-import NavBar from '@/components/common/layout/NavBar';
-import ErrorBoundary from '@/components/common/ui/ErrorBoundary';
+import React, { useState, useEffect } from 'react';
+import { useAuthenticator } from '@aws-amplify/ui-react';
+import PageLayout from '@/components/common/layout/PageLayout';
+import ContentCard from '@/components/common/layout/ContentCard';
+import SettingsPanel from '@/components/settings/SettingsPanel';
+import ProfileSettingsForm from '@/components/settings/ProfileSettingsForm';
+import MaintenanceSettingsForm from '@/components/settings/MaintenanceSettingsForm';
+import DisplaySettingsForm from '@/components/settings/DisplaySettingsForm';
+import LoadingState from '@/components/common/ui/LoadingState';
 
 /**
  * Settings Page - User preferences and app settings
  * 
  * Features:
- * - User preferences (placeholder for Phase 3)
- * - App settings (placeholder for Phase 3)
+ * - User profile settings (display name, notification preferences)
+ * - Maintenance settings (reminder period, maintenance categories)
+ * - Display preferences (units, date format)
  * - Back navigation to dashboard
  */
 export default function Settings() {
+  const { user } = useAuthenticator();
+  const [loading, setLoading] = useState(true);
+  
+  // Mock settings data - in a real implementation, this would be fetched from the database
+  const [settings, setSettings] = useState({
+    profile: {
+      displayName: '',
+      notificationsEnabled: true,
+    },
+    maintenance: {
+      reminderDays: 7,
+      maintenanceTypes: [] as string[],
+    },
+    display: {
+      units: 'miles' as 'miles' | 'kilometers',
+      dateFormat: 'MM/DD/YYYY' as 'MM/DD/YYYY' | 'DD/MM/YYYY' | 'YYYY-MM-DD',
+    }
+  });
+  
+  // Simulate loading settings from the database
+  useEffect(() => {
+    // In a real implementation, this would fetch the user's settings from the database
+    const loadSettings = async () => {
+      try {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Mock data - in a real implementation, this would come from the API
+        setSettings({
+          profile: {
+            displayName: user?.username || '',
+            notificationsEnabled: true,
+          },
+          maintenance: {
+            reminderDays: 7,
+            maintenanceTypes: [
+              'Regular Service',
+              'Repair',
+              'Inspection',
+              'Upgrade',
+              'Replacement',
+              'Cleaning',
+              'Completed',
+              'Other'
+            ],
+          },
+          display: {
+            units: 'miles',
+            dateFormat: 'MM/DD/YYYY',
+          }
+        });
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadSettings();
+  }, [user]);
+  
+  // Handle settings refresh
+  const handleRefreshSettings = () => {
+    setLoading(true);
+    // In a real implementation, this would re-fetch the user's settings
+    // Use a longer timeout to ensure the success message is visible
+    setTimeout(() => setLoading(false), 1500);
+  };
+  
+  if (loading) {
+    return <LoadingState fullScreen message="Loading settings..." />;
+  }
+  
   return (
-    <ErrorBoundary>
-      <main className="container mx-auto px-2 py-3 sm:p-4">
-        <NavBar 
-          title="Settings" 
-          showBackButton 
-          backUrl="/"
-        />
-
-        <div className="mt-8">
-          <div className="card">
-            <h1 className="heading mb-4">User Settings</h1>
-            <p className="text mb-4">
-              This feature will be implemented in Phase 3 of the project.
-            </p>
-            <p className="text mb-4">
-              The settings page will allow you to:
-            </p>
-            <ul className="list-disc pl-5 mb-4 text">
-              <li>Manage your user profile</li>
-              <li>Configure notification preferences</li>
-              <li>Set display preferences</li>
-              <li>Manage account settings</li>
-            </ul>
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <p className="text text-blue">
-                This is a placeholder page. The actual implementation will be available in Phase 3.
-              </p>
-            </div>
-          </div>
-        </div>
-      </main>
-    </ErrorBoundary>
+    <PageLayout title="Settings" showBackButton backUrl="/">
+      <SettingsPanel>
+        <ContentCard title="User Profile">
+          <ProfileSettingsForm 
+            initialSettings={settings.profile}
+            onSave={handleRefreshSettings}
+          />
+        </ContentCard>
+        
+        <ContentCard title="Maintenance Preferences">
+          <MaintenanceSettingsForm 
+            initialSettings={settings.maintenance}
+            onSave={handleRefreshSettings}
+          />
+        </ContentCard>
+        
+        <ContentCard title="Display Preferences">
+          <DisplaySettingsForm 
+            initialSettings={settings.display}
+            onSave={handleRefreshSettings}
+          />
+        </ContentCard>
+      </SettingsPanel>
+    </PageLayout>
   );
 }

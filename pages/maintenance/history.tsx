@@ -142,9 +142,8 @@ export default function MaintenanceHistory() {
   
   // Handle complete maintenance
   const handleComplete = (record: MaintenanceRecord) => {
-    // For now, just show an alert
-    alert(`Marking as completed: ${record.title}`);
-    // In a future implementation, this would update the record status
+    // Navigate to the maintenance page to mark as complete
+    router.push(`/maintenance/new?id=${record.id}&complete=true`);
   };
   
   // Show loading state

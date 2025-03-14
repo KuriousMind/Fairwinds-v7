@@ -23,7 +23,7 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
           You haven&apos;t added your RV yet. Get started by adding your RV details.
         </p>
         <Link 
-          href="/rv/profile?edit=true" 
+          href="/rv?edit=true" 
           className="btn-primary inline-block rounded-lg px-3 py-2 text-center w-full sm:w-auto"
         >
           Add RV Details
@@ -94,10 +94,10 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
       {/* Quick links */}
       <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Link 
-          href="/rv/profile" 
+          href="/rv" 
           className="btn-secondary text-sm py-2"
         >
-          View Profile
+          View RV Details
         </Link>
         <Link 
           href="/rv/photos" 

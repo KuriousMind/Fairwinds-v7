@@ -132,7 +132,7 @@ const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) 
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push('/rv/profile');
+        router.push('/rv');
       }
     } catch (error) {
       console.error('Error saving RV:', error);
@@ -144,7 +144,7 @@ const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) 
   
   // Handle cancel button
   const handleCancel = () => {
-    router.push('/rv/profile');
+    router.push('/rv');
   };
   
   return (

@@ -16,6 +16,7 @@ const MAINTENANCE_TYPES = [
   'Upgrade',
   'Replacement',
   'Cleaning',
+  'Completed',
   'Other'
 ];
 
@@ -24,6 +25,7 @@ interface MaintenanceFormProps {
   rv: RV;
   onSuccess?: () => void;
   onCancel?: () => void;
+  completeMode?: boolean;
 }
 
 /**
@@ -36,12 +38,14 @@ interface MaintenanceFormProps {
  * - Notes field
  * - Photo upload (reusing existing functionality)
  * - Create/update functionality
+ * - Complete mode for marking maintenance as completed
  */
 const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   maintenanceRecord,
   rv,
   onSuccess,
   onCancel,
+  completeMode = false,
 }) => {
   const router = useRouter();
   const { user } = useAuthenticator();
@@ -52,7 +56,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
-    type: MAINTENANCE_TYPES[0],
+    type: completeMode ? 'Completed' : MAINTENANCE_TYPES[0],
     notes: '',
   });
   
@@ -72,7 +76,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
       setFormData({
         title: maintenanceRecord.title || '',
         date: new Date(maintenanceRecord.date).toISOString().split('T')[0],
-        type: maintenanceRecord.type || MAINTENANCE_TYPES[0],
+        type: completeMode ? 'Completed' : (maintenanceRecord.type || MAINTENANCE_TYPES[0]),
         notes: maintenanceRecord.notes || '',
       });
       
@@ -80,7 +84,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
         setPhotos(maintenanceRecord.photos);
       }
     }
-  }, [maintenanceRecord]);
+  }, [maintenanceRecord, completeMode]);
   
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -224,8 +228,17 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold text-navy mb-6">
-        {maintenanceRecord ? 'Edit Maintenance Record' : 'Add Maintenance Record'}
+        {completeMode 
+          ? 'Mark Maintenance as Completed' 
+          : (maintenanceRecord ? 'Edit Maintenance Record' : 'Add Maintenance Record')}
       </h2>
+      
+      {completeMode && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded">
+          <p className="font-medium">You are marking this maintenance record as completed.</p>
+          <p>Update any details if needed and click "Save" to confirm completion.</p>
+        </div>
+      )}
       
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
@@ -278,6 +291,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             onChange={handleChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
             required
+            disabled={completeMode}
           >
             {MAINTENANCE_TYPES.map((type) => (
               <option key={type} value={type}>
@@ -285,6 +299,9 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
               </option>
             ))}
           </select>
+          {completeMode && (
+            <input type="hidden" name="type" value="Completed" />
+          )}
         </div>
         
         {/* Notes field */}
@@ -299,6 +316,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             onChange={handleChange}
             rows={4}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+            placeholder={completeMode ? "Add any completion notes here..." : ""}
           />
         </div>
         
@@ -390,7 +408,11 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
           </button>
           <button
             type="submit"
-            className="px-4 py-2 bg-blue text-white rounded-md hover:bg-orange transition-colors"
+            className={`px-4 py-2 text-white rounded-md transition-colors ${
+              completeMode 
+                ? 'bg-green-600 hover:bg-green-700' 
+                : 'bg-blue hover:bg-orange'
+            }`}
             disabled={isSubmitting}
           >
             {isSubmitting ? (
@@ -402,7 +424,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                 Saving...
               </span>
             ) : (
-              'Save Maintenance Record'
+              completeMode ? 'Mark as Completed' : 'Save Maintenance Record'
             )}
           </button>
         </div>
