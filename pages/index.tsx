@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import { useRouter } from "next/router";
 import Link from "next/link";
 import PageLayout from "@/components/common/layout/PageLayout";
 import ContentCard from "@/components/common/layout/ContentCard";
@@ -7,15 +8,18 @@ import ButtonGrid from "@/components/common/navigation/ButtonGrid";
 import NavButton from "@/components/common/navigation/NavButton";
 import LoadingState from "@/components/common/ui/LoadingState";
 import RVSummaryCard from "@/components/dashboard/RVSummaryCard";
+import MaintenanceCard from "@/components/maintenance/MaintenanceCard";
 import { client, handleApiError } from "@/lib/api/amplify";
-import { RV } from "@/types/models";
+import { RV, MaintenanceRecord } from "@/types/models";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [userRV, setUserRV] = useState<RV | null>(null);
+  const [maintenanceRecords, setMaintenanceRecords] = useState<MaintenanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, signOut } = useAuthenticator();
 
-  // Fetch the user's RV data
+  // Fetch the user's RV data and maintenance records
   useEffect(() => {
     async function fetchUserRV() {
       try {
@@ -54,11 +58,13 @@ export default function Dashboard() {
             }
           }
           setUserRV(typedRV);
+          
+          // Fetch maintenance records for this RV
+          await fetchMaintenanceRecords(rvItem.id);
         } else {
           setUserRV(null);
+          setLoading(false);
         }
-        
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching RV data:", error);
         handleApiError(error);
@@ -72,6 +78,81 @@ export default function Dashboard() {
       setLoading(false);
     }
   }, [user]);
+  
+  // Fetch maintenance records for the RV
+  const fetchMaintenanceRecords = async (rvId: string) => {
+    try {
+      // List maintenance records for the RV
+      const recordsData = await client.models.MaintenanceRecord.list({
+        filter: { rvId: { eq: rvId } }
+      });
+      
+      if (recordsData.data && recordsData.data.length > 0) {
+        // Map the raw records to typed records
+        const typedRecords = recordsData.data
+          .filter(record => record.rvId) // Filter out records with null rvId
+          .map(record => ({
+            id: record.id,
+            title: record.title,
+            date: record.date,
+            type: record.type,
+            notes: record.notes || '',
+            rvId: record.rvId as string, // Type assertion to ensure it's a string
+            photos: record.photos as string[] || [],
+          }));
+        
+        // Sort by date (newest first)
+        typedRecords.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        setMaintenanceRecords(typedRecords as MaintenanceRecord[]);
+      } else {
+        setMaintenanceRecords([]);
+      }
+    } catch (error) {
+      console.error('Error fetching maintenance records:', error);
+      handleApiError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Get upcoming maintenance records
+  const getUpcomingRecords = () => {
+    const today = new Date();
+    
+    return maintenanceRecords
+      .filter(record => 
+        !record.type.toLowerCase().includes('completed') && 
+        new Date(record.date) >= today
+      )
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 2); // Get the first 2 upcoming records
+  };
+  
+  // Get overdue maintenance records
+  const getOverdueRecords = () => {
+    const today = new Date();
+    
+    return maintenanceRecords
+      .filter(record => 
+        !record.type.toLowerCase().includes('completed') && 
+        new Date(record.date) < today
+      )
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .slice(0, 2); // Get the first 2 overdue records
+  };
+  
+  // Handle view details
+  const handleViewDetails = (record: MaintenanceRecord) => {
+    // Navigate to the maintenance history page
+    router.push(`/maintenance/history?id=${record.id}`);
+  };
+  
+  // Handle complete maintenance
+  const handleComplete = (record: MaintenanceRecord) => {
+    // Navigate to the maintenance page to mark as complete
+    router.push(`/maintenance/new?id=${record.id}&complete=true`);
+  };
 
   // Display loading state while fetching data
   if (loading) {
@@ -125,32 +206,47 @@ export default function Dashboard() {
       <div className="content-section-spacing">
         <ContentCard
           title="Upcoming Maintenance"
-          actions={<Link href="/maintenance/history" className="text-blue-600 text-sm">View All</Link>}
+          actions={<Link href="/maintenance/history?filter=upcoming" className="text-blue-600 text-sm">View All</Link>}
         >
-          <div className="space-y-2">
-            {/* Sample maintenance items */}
-            <div className="p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium text-yellow-800">Oil Change Due</h3>
-                  <p className="text-sm text-gray-600">Due in 2 weeks (March 27, 2025)</p>
-                </div>
-                <span className="px-2 py-1 text-xs bg-yellow-200 text-yellow-800 rounded-full">Upcoming</span>
-              </div>
+          {getUpcomingRecords().length > 0 ? (
+            <div className="space-y-3">
+              {getUpcomingRecords().map(record => (
+                <MaintenanceCard
+                  key={record.id}
+                  record={record}
+                  onView={() => handleViewDetails(record)}
+                  onComplete={() => handleComplete(record)}
+                />
+              ))}
             </div>
-            
-            <div className="p-3 border border-red-200 bg-red-50 rounded-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-medium text-red-800">Tire Rotation</h3>
-                  <p className="text-sm text-gray-600">Overdue by 1 week (March 6, 2025)</p>
-                </div>
-                <span className="px-2 py-1 text-xs bg-red-200 text-red-800 rounded-full">Overdue</span>
-              </div>
+          ) : (
+            <div className="p-3 border border-gray-200 bg-gray-50 rounded-lg">
+              <p className="text-center text-gray-600">No upcoming maintenance records.</p>
             </div>
-          </div>
+          )}
         </ContentCard>
       </div>
+      
+      {/* Overdue Maintenance Section */}
+      {getOverdueRecords().length > 0 && (
+        <div className="content-section-spacing">
+          <ContentCard
+            title="Overdue Maintenance"
+            actions={<Link href="/maintenance/history?filter=overdue" className="text-blue-600 text-sm">View All</Link>}
+          >
+            <div className="space-y-3">
+              {getOverdueRecords().map(record => (
+                <MaintenanceCard
+                  key={record.id}
+                  record={record}
+                  onView={() => handleViewDetails(record)}
+                  onComplete={() => handleComplete(record)}
+                />
+              ))}
+            </div>
+          </ContentCard>
+        </div>
+      )}
       
       {/* Quick Stats Section */}
       <div className="content-section-spacing">
@@ -162,11 +258,11 @@ export default function Dashboard() {
             </div>
             <div className="text-center p-2 bg-green-50 rounded-lg">
               <p className="text-sm text-gray-600">Maintenance</p>
-              <p className="text-xl font-bold text-green-700">8</p>
+              <p className="text-xl font-bold text-green-700">{maintenanceRecords.length}</p>
             </div>
             <div className="text-center p-2 bg-purple-50 rounded-lg">
               <p className="text-sm text-gray-600">Photos</p>
-              <p className="text-xl font-bold text-purple-700">6</p>
+              <p className="text-xl font-bold text-purple-700">{userRV?.photos?.length || 0}</p>
             </div>
             <div className="text-center p-2 bg-orange-50 rounded-lg">
               <p className="text-sm text-gray-600">Documents</p>

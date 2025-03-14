@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useRouter } from 'next/router';
+import NavButton from '../navigation/NavButton';
 
 // Props for the NavBar component
 interface NavBarProps {
@@ -48,27 +49,27 @@ const NavBar: React.FC<NavBarProps> = ({
           {/* Navigation Buttons - Centered */}
           <div className="w-full flex justify-center items-center space-x-1 sm:space-x-2">
             {showBackButton && (
-              <button
+              <NavButton
+                href={backUrl || ''}
+                label="Back"
                 onClick={handleBack}
-                className="btn-secondary px-3 py-1 text-sm rounded-lg flex items-center"
-                aria-label="Back"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1 text-navy"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-                Back
-              </button>
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    style={{ width: '10px', height: '10px' }}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={0.75}
+                      d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                    />
+                  </svg>
+                }
+              />
             )}
             {children}
           </div>

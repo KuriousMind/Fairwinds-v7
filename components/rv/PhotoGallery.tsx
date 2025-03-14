@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV } from '@/types/models';
 import LoadingState from '@/components/common/ui/LoadingState';
+import S3Image from '@/components/common/ui/S3Image';
+import { deleteFromS3 } from '@/lib/storage/s3';
 
 interface PhotoGalleryProps {
   rv: RV;
@@ -48,6 +50,16 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
         id: rv.id,
         photos: updatedPhotos,
       });
+      
+      // Delete from S3 if it's not a base64 string
+      if (!selectedPhoto.startsWith('data:image/')) {
+        try {
+          await deleteFromS3(selectedPhoto);
+        } catch (s3Error) {
+          console.error('Error deleting from S3:', s3Error);
+          // Continue even if S3 deletion fails
+        }
+      }
       
       // Close the preview and notify parent
       setSelectedPhoto(null);
@@ -109,8 +121,8 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             className="photo-container cursor-pointer hover:opacity-90 transition-opacity relative"
             onClick={() => setSelectedPhoto(photo)}
           >
-            <img
-              src={photo}
+            <S3Image
+              s3Key={photo}
               alt={`RV photo ${index + 1}`}
               className="photo-img"
             />
@@ -169,11 +181,11 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             
             <div className="flex-1 overflow-auto flex items-center justify-center bg-gray-100 p-2">
               <div className="photo-container" style={{ maxHeight: '60vh', width: 'auto', height: 'auto' }}>
-                <img
-                  src={selectedPhoto}
+                <S3Image
+                  s3Key={selectedPhoto}
                   alt="RV photo preview"
                   className="photo-img object-contain"
-                  style={{ maxHeight: '60vh' }}
+                  height={600}
                 />
               </div>
             </div>

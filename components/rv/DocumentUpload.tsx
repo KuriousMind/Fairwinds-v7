@@ -1,28 +1,27 @@
 import React, { useState, useRef } from 'react';
 import { client, handleApiError } from '@/lib/api/amplify';
-import { RV } from '@/types/models';
-import { compressImage, validateImageFile } from '@/lib/image/compression';
+import { RV, Document } from '@/types/models';
+import { validateDocumentFile, getDocumentTypeName, getFormattedFileSize, ALLOWED_DOCUMENT_TYPES } from '@/lib/document/validation';
 import { uploadToS3 } from '@/lib/storage/s3';
 
-interface PhotoUploadProps {
+interface DocumentUploadProps {
   rv: RV;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 /**
- * PhotoUpload component for adding new photos with client-side compression
+ * DocumentUpload component for adding new documents
  * 
  * Features:
  * - File selection
  * - Drag and drop
- * - Image preview
- * - Client-side compression
- * - Upload to S3 (via base64)
+ * - Document preview
+ * - Upload to S3
  */
-const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) => {
+const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [documentTitle, setDocumentTitle] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -30,9 +29,9 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Maximum file size in MB
-  const MAX_FILE_SIZE = 5;
-  // Maximum number of photos allowed
-  const MAX_PHOTOS = 12;
+  const MAX_FILE_SIZE = 10;
+  // Maximum number of documents allowed
+  const MAX_DOCUMENTS = 20;
   
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,22 +39,18 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
       const file = e.target.files[0];
       
       // Validate file type and size
-      if (!validateImageFile(file, MAX_FILE_SIZE)) {
-        setError(`Please select a valid image file under ${MAX_FILE_SIZE}MB.`);
+      if (!validateDocumentFile(file, MAX_FILE_SIZE)) {
+        setError(`Please select a valid document file under ${MAX_FILE_SIZE}MB.`);
         return;
       }
       
       setSelectedFile(file);
-      setError(null);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setPreview(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      // Set default document title from filename (without extension)
+      const fileName = file.name.split('.').slice(0, -1).join('.');
+      setDocumentTitle(fileName || 'Document');
+      
+      setError(null);
     }
   };
   
@@ -68,22 +63,18 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
       const file = e.dataTransfer.files[0];
       
       // Validate file type and size
-      if (!validateImageFile(file, MAX_FILE_SIZE)) {
-        setError(`Please select a valid image file under ${MAX_FILE_SIZE}MB.`);
+      if (!validateDocumentFile(file, MAX_FILE_SIZE)) {
+        setError(`Please select a valid document file under ${MAX_FILE_SIZE}MB.`);
         return;
       }
       
       setSelectedFile(file);
-      setError(null);
       
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setPreview(e.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      // Set default document title from filename (without extension)
+      const fileName = file.name.split('.').slice(0, -1).join('.');
+      setDocumentTitle(fileName || 'Document');
+      
+      setError(null);
     }
   };
   
@@ -97,14 +88,20 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
   const handleUpload = async () => {
     if (!selectedFile || !rv) return;
     
+    // Validate document title
+    if (!documentTitle.trim()) {
+      setError('Please enter a document title.');
+      return;
+    }
+    
     setIsUploading(true);
     setError(null);
     setUploadProgress(0);
     
     try {
-      // Check if we've reached the photo limit
-      if (rv.photos && rv.photos.length >= MAX_PHOTOS) {
-        throw new Error(`You can only upload a maximum of ${MAX_PHOTOS} photos.`);
+      // Check if we've reached the document limit
+      if (rv.documents && rv.documents.length >= MAX_DOCUMENTS) {
+        throw new Error(`You can only upload a maximum of ${MAX_DOCUMENTS} documents.`);
       }
       
       // Simulate progress
@@ -115,18 +112,15 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
         });
       }, 300);
       
-      // Compress the image
-      const compressedBlob = await compressImage(selectedFile);
-      
       // Upload to S3
-      const s3Key = await uploadToS3(compressedBlob, `rv-photos/${rv.id}`);
+      const s3Key = await uploadToS3(selectedFile, `rv-documents/${rv.id}`);
       
-      // Update the RV with the S3 key
-      const updatedPhotos = [...(rv.photos || []), s3Key];
-      
-      await client.models.RV.update({
-        id: rv.id,
-        photos: updatedPhotos,
+      // Create a new document record
+      const newDocument = await client.models.Document.create({
+        title: documentTitle,
+        type: selectedFile.type,
+        url: s3Key,
+        rvId: rv.id,
       });
       
       clearInterval(progressInterval);
@@ -135,7 +129,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
       // Notify parent of success
       onSuccess();
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      console.error('Error uploading document:', error);
       setError(handleApiError(error));
     } finally {
       setIsUploading(false);
@@ -144,7 +138,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
   
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-navy mb-6">Upload Photo</h2>
+      <h2 className="text-2xl font-semibold text-navy mb-6">Upload Document</h2>
       
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
@@ -155,7 +149,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
       {/* File drop area */}
       <div
         className={`border-2 border-dashed rounded-lg p-6 text-center ${
-          preview ? 'border-blue' : 'border-gray-300 hover:border-blue'
+          selectedFile ? 'border-blue' : 'border-gray-300 hover:border-blue'
         } transition-colors`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -165,21 +159,23 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
           type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
-          accept="image/*"
+          accept={ALLOWED_DOCUMENT_TYPES.join(',')}
           className="hidden"
         />
         
-        {preview ? (
+        {selectedFile ? (
           <div className="flex flex-col items-center">
-            <div className="photo-container mb-4 rounded" style={{ maxHeight: '200px', width: '200px' }}>
-              <img
-                src={preview}
-                alt="Preview"
-                className="photo-img"
-              />
+            <div className="p-4 bg-blue-100 rounded-lg mb-4">
+              <svg className="h-12 w-12 text-blue-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <p className="mt-2 font-medium">{selectedFile.name}</p>
+              <p className="text-sm text-gray-600">
+                {getDocumentTypeName(selectedFile.type)} • {getFormattedFileSize(selectedFile.size)}
+              </p>
             </div>
             <p className="text-sm text-gray-500">
-              Click to select a different photo
+              Click to select a different document
             </p>
           </div>
         ) : (
@@ -194,18 +190,36 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
             <p className="text-navy font-medium mb-1">
               Click to select or drag and drop
             </p>
             <p className="text-sm text-gray-500">
-              JPG, PNG, or GIF (max. {MAX_FILE_SIZE}MB)
+              PDF, DOC, DOCX, XLS, XLSX, TXT, RTF (max. {MAX_FILE_SIZE}MB)
             </p>
           </div>
         )}
       </div>
+      
+      {/* Document title input */}
+      {selectedFile && (
+        <div className="mt-4">
+          <label htmlFor="documentTitle" className="block text-navy font-medium mb-1">
+            Document Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="documentTitle"
+            value={documentTitle}
+            onChange={(e) => setDocumentTitle(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+            placeholder="Enter document title"
+            required
+          />
+        </div>
+      )}
       
       {/* Upload progress */}
       {isUploading && (
@@ -236,18 +250,18 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
         <button
           type="button"
           onClick={handleUpload}
-          disabled={!selectedFile || isUploading}
+          disabled={!selectedFile || !documentTitle.trim() || isUploading}
           className={`px-4 py-2 rounded-md text-white transition-colors ${
-            !selectedFile || isUploading
+            !selectedFile || !documentTitle.trim() || isUploading
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-blue hover:bg-orange'
           }`}
         >
-          {isUploading ? 'Uploading...' : 'Upload Photo'}
+          {isUploading ? 'Uploading...' : 'Upload Document'}
         </button>
       </div>
     </div>
   );
 };
 
-export default PhotoUpload;
+export default DocumentUpload;

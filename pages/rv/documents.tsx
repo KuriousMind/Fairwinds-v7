@@ -2,26 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import PageLayout from '@/components/common/layout/PageLayout';
-import MaintenanceForm from '@/components/maintenance/MaintenanceForm';
+import DocumentList from '@/components/rv/DocumentList';
+import DocumentUpload from '@/components/rv/DocumentUpload';
 import LoadingState from '@/components/common/ui/LoadingState';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV } from '@/types/models';
 
 /**
- * New Maintenance Record Page - Create a new maintenance record
+ * RV Documents Page - View and manage RV documents
  * 
  * Features:
- * - Form for entering maintenance details
- * - Photo upload
- * - Back navigation to maintenance index
+ * - List of documents
+ * - Document upload
+ * - Document deletion
+ * - Back navigation to RV index
  */
-export default function MaintenanceNew() {
+export default function RVDocuments() {
   const router = useRouter();
   const { user } = useAuthenticator();
   
   const [rv, setRV] = useState<RV | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showUploadForm, setShowUploadForm] = useState(false);
   
   // Fetch RV data
   useEffect(() => {
@@ -79,23 +82,23 @@ export default function MaintenanceNew() {
     fetchRV();
   }, [user]);
   
-  // Handle form submission success
-  const handleFormSuccess = () => {
-    router.push('/maintenance');
+  // Handle document upload success
+  const handleUploadSuccess = () => {
+    setShowUploadForm(false);
   };
   
-  // Handle form cancel
-  const handleFormCancel = () => {
-    router.push('/maintenance');
+  // Handle document upload cancel
+  const handleUploadCancel = () => {
+    setShowUploadForm(false);
   };
   
   // Show loading state
   if (loading) {
     return (
-      <PageLayout 
-        title="New Maintenance Record" 
-        showBackButton 
-        backUrl="/maintenance"
+      <PageLayout
+        title="RV Documents"
+        showBackButton
+        backUrl="/rv"
       >
         <LoadingState message="Loading RV information..." />
       </PageLayout>
@@ -105,15 +108,15 @@ export default function MaintenanceNew() {
   // Show message if no RV exists
   if (!rv) {
     return (
-      <PageLayout 
-        title="New Maintenance Record" 
-        showBackButton 
-        backUrl="/maintenance"
+      <PageLayout
+        title="RV Documents"
+        showBackButton
+        backUrl="/rv"
       >
         <div className="card bg-blue-50 border-blue-100">
           <h2 className="heading mb-2">No RV Found</h2>
           <p className="text mb-4">
-            You need to add your RV details before you can create maintenance records.
+            You need to add your RV details before you can manage documents.
           </p>
           <button
             onClick={() => router.push('/rv/profile?edit=true')}
@@ -127,10 +130,10 @@ export default function MaintenanceNew() {
   }
   
   return (
-    <PageLayout 
-      title="New Maintenance Record" 
-      showBackButton 
-      backUrl="/maintenance"
+    <PageLayout
+      title="RV Documents"
+      showBackButton
+      backUrl="/rv"
     >
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
@@ -138,11 +141,18 @@ export default function MaintenanceNew() {
         </div>
       )}
       
-      <MaintenanceForm 
-        rv={rv}
-        onSuccess={handleFormSuccess}
-        onCancel={handleFormCancel}
-      />
+      {showUploadForm ? (
+        <DocumentUpload
+          rv={rv}
+          onSuccess={handleUploadSuccess}
+          onCancel={handleUploadCancel}
+        />
+      ) : (
+        <DocumentList
+          rv={rv}
+          onAddDocument={() => setShowUploadForm(true)}
+        />
+      )}
     </PageLayout>
   );
 }

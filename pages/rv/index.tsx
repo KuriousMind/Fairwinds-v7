@@ -19,7 +19,7 @@ export default function RVIndex() {
       title="My RV"
     >
       {/* Navigation Section */}
-      <ButtonGrid columns={3}>
+      <ButtonGrid columns={4}>
         {/* Profile Button */}
         <NavButton
           href="/rv/profile"
@@ -43,10 +43,21 @@ export default function RVIndex() {
           }
         />
         
+        {/* Documents Button */}
+        <NavButton
+          href="/rv/documents"
+          label="Documents"
+          icon={
+            <svg style={{ width: '10px', height: '10px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          }
+        />
+        
         {/* Back to Dashboard Button */}
         <NavButton
           href="/"
-          label="Back to Dashboard"
+          label="Back"
           icon={
             <svg style={{ width: '10px', height: '10px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={0.75} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -108,7 +119,7 @@ export default function RVIndex() {
       <div className="content-section-spacing">
         <ContentCard
           title="Documents"
-          actions={<button className="text-blue-600 text-sm">Add New</button>}
+          actions={<Link href="/rv/documents" className="text-blue-600 text-sm">View All</Link>}
         >
           <div className="space-y-2">
             <div className="p-2 border border-gray-200 rounded-lg flex justify-between items-center">
