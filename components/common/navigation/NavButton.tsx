@@ -28,15 +28,15 @@ const NavButton: React.FC<NavButtonProps> = ({
   isDisabled = false,
   onClick,
 }) => {
-  // Base classes for the button
-  const baseClasses = "flex items-center justify-center px-4 py-2 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  // Use our utility classes from globals.css
+  const baseClasses = "btn flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-offset-2";
   
   // Classes based on primary/secondary and disabled state
   const stateClasses = isDisabled
     ? "bg-gray-200 text-gray-500 cursor-not-allowed"
     : isPrimary
-      ? "bg-blue text-white hover:bg-orange focus:ring-blue"
-      : "bg-white text-navy border border-gray-300 hover:bg-gray-50 focus:ring-navy";
+      ? "btn-primary focus:ring-blue"
+      : "btn-secondary focus:ring-navy";
   
   // Combine all classes
   const buttonClasses = `${baseClasses} ${stateClasses}`;

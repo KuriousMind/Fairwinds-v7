@@ -102,17 +102,17 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
       )}
       
       {/* Photo grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="photo-grid grid-cols-2 md:grid-cols-3">
         {rv.photos.map((photo, index) => (
           <div
             key={index}
-            className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
+            className="photo-container cursor-pointer hover:opacity-90 transition-opacity relative"
             onClick={() => setSelectedPhoto(photo)}
           >
             <img
               src={photo}
               alt={`RV photo ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="photo-img"
             />
           </div>
         ))}
@@ -120,7 +120,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
         {/* Add photo button (if under limit) */}
         {rv.photos.length < MAX_PHOTOS && (
           <div
-            className="aspect-square bg-gray-100 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors border-2 border-dashed border-gray-300"
+            className="photo-container flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors border-2 border-dashed border-gray-300"
             onClick={() => onPhotoAdded && onPhotoAdded()}
           >
             <svg
@@ -168,11 +168,14 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             </div>
             
             <div className="flex-1 overflow-auto flex items-center justify-center bg-gray-100 p-2">
-              <img
-                src={selectedPhoto}
-                alt="RV photo preview"
-                className="max-w-full max-h-[60vh] object-contain"
-              />
+              <div className="photo-container" style={{ maxHeight: '60vh', width: 'auto', height: 'auto' }}>
+                <img
+                  src={selectedPhoto}
+                  alt="RV photo preview"
+                  className="photo-img object-contain"
+                  style={{ maxHeight: '60vh' }}
+                />
+              </div>
             </div>
             
             <div className="p-4 border-t flex justify-end">

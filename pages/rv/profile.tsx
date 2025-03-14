@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import NavBar from '@/components/common/layout/NavBar';
+import PageLayout from '@/components/common/layout/PageLayout';
 import RVProfile from '@/components/rv/RVProfile';
 import RVProfileForm from '@/components/rv/RVProfileForm';
 import LoadingState from '@/components/common/ui/LoadingState';
-import ErrorBoundary from '@/components/common/ui/ErrorBoundary';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV } from '@/types/models';
 
@@ -90,47 +89,38 @@ export default function RVProfilePage() {
   // Show loading state
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
-        <NavBar 
-          title="RV Profile" 
-          showBackButton 
-          backUrl="/rv"
-        />
-        <div className="mt-8">
-          <LoadingState message="Loading RV information..." />
-        </div>
-      </div>
+      <PageLayout 
+        title="RV Profile" 
+        showBackButton 
+        backUrl="/rv"
+      >
+        <LoadingState message="Loading RV information..." />
+      </PageLayout>
     );
   }
   
   return (
-    <ErrorBoundary>
-      <div className="container mx-auto p-4">
-        <NavBar 
-          title="RV Profile" 
-          showBackButton 
-          backUrl="/rv"
-        />
-        
-        <div className="mt-8">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-          
-          {/* Show form if in edit mode or no RV exists */}
-          {edit === 'true' || (!rv && !loading) ? (
-            <RVProfileForm 
-              rv={rv} 
-              userId={user?.userId || ''} 
-              onSuccess={handleFormSuccess} 
-            />
-          ) : (
-            <RVProfile rv={rv} isLoading={loading} />
-          )}
+    <PageLayout 
+      title="RV Profile" 
+      showBackButton 
+      backUrl="/rv"
+    >
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+          {error}
         </div>
-      </div>
-    </ErrorBoundary>
+      )}
+      
+      {/* Show form if in edit mode or no RV exists */}
+      {edit === 'true' || (!rv && !loading) ? (
+        <RVProfileForm 
+          rv={rv} 
+          userId={user?.userId || ''} 
+          onSuccess={handleFormSuccess} 
+        />
+      ) : (
+        <RVProfile rv={rv} isLoading={loading} />
+      )}
+    </PageLayout>
   );
 }

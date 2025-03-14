@@ -183,11 +183,13 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
         
         {preview ? (
           <div className="flex flex-col items-center">
-            <img
-              src={preview}
-              alt="Preview"
-              className="max-h-64 max-w-full mb-4 rounded"
-            />
+            <div className="photo-container mb-4 rounded" style={{ maxHeight: '200px', width: '200px' }}>
+              <img
+                src={preview}
+                alt="Preview"
+                className="photo-img"
+              />
+            </div>
             <p className="text-sm text-gray-500">
               Click to select a different photo
             </p>

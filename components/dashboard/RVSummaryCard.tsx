@@ -17,14 +17,14 @@ interface RVSummaryCardProps {
 const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
   if (!rv) {
     return (
-      <div className="bg-blue-50 p-6 rounded-lg border border-blue-100 shadow-md">
-        <h2 className="text-xl font-semibold text-navy mb-2">Welcome to Fairwinds!</h2>
-        <p className="text-gray-700 mb-4">
+      <div className="card bg-blue-50 border-blue-100">
+        <h2 className="heading mb-2">Welcome to Fairwinds!</h2>
+        <p className="text mb-3">
           You haven&apos;t added your RV yet. Get started by adding your RV details.
         </p>
         <Link 
           href="/rv/profile?edit=true" 
-          className="px-4 py-2 bg-blue text-white rounded-lg hover:bg-orange transition-colors inline-block"
+          className="btn-primary inline-block rounded-lg px-3 py-2 text-center w-full sm:w-auto"
         >
           Add RV Details
         </Link>
@@ -33,9 +33,9 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex justify-between items-start mb-4">
-        <h2 className="text-xl font-semibold text-navy">
+    <div className="card">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-1">
+        <h2 className="heading">
           My RV
         </h2>
         <Link 
@@ -47,10 +47,10 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
       </div>
       
       <div className="mb-4">
-        <h3 className="text-lg font-medium text-navy mb-2">
+        <h3 className="heading mb-2">
           {rv.year} {rv.make} {rv.model}
         </h3>
-        <div className="space-y-1 text-gray-700">
+        <div className="space-y-1 text">
           <p><span className="font-medium">Make:</span> {rv.make}</p>
           <p><span className="font-medium">Model:</span> {rv.model}</p>
           <p><span className="font-medium">Year:</span> {rv.year}</p>
@@ -60,7 +60,7 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
       {/* Photo preview */}
       <div className="mt-4">
         <div className="flex justify-between items-center mb-2">
-          <h4 className="font-medium text-navy">Photos</h4>
+          <h4 className="heading text-lg">Photos</h4>
           <Link 
             href="/rv/photos" 
             className="text-blue hover:text-orange transition-colors text-sm"
@@ -70,18 +70,18 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
         </div>
         
         {rv.photos && rv.photos.length > 0 ? (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="photo-grid grid-cols-3 max-w-full">
             {rv.photos.slice(0, 3).map((photo, index) => (
-              <div key={index} className="aspect-square bg-gray-100 rounded-md overflow-hidden">
+              <div key={index} className="photo-container">
                 <img 
                   src={photo} 
                   alt={`RV photo ${index + 1}`} 
-                  className="w-full h-full object-cover"
+                  className="photo-img"
                 />
               </div>
             ))}
             {rv.photos.length > 3 && (
-              <div className="aspect-square bg-gray-100 rounded-md flex items-center justify-center text-navy font-medium">
+              <div className="photo-container flex items-center justify-center text-navy font-medium">
                 +{rv.photos.length - 3} more
               </div>
             )}
@@ -92,16 +92,16 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
       </div>
       
       {/* Quick links */}
-      <div className="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
+      <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-2">
         <Link 
           href="/rv/profile" 
-          className="px-3 py-1 bg-gray-100 text-navy rounded hover:bg-gray-200 transition-colors text-sm"
+          className="btn-secondary text-sm py-2"
         >
           View Profile
         </Link>
         <Link 
           href="/rv/photos" 
-          className="px-3 py-1 bg-gray-100 text-navy rounded hover:bg-gray-200 transition-colors text-sm"
+          className="btn-secondary text-sm py-2"
         >
           Manage Photos
         </Link>

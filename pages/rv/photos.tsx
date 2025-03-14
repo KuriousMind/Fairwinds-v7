@@ -108,7 +108,7 @@ export default function RVPhotosPage() {
   // Show loading state
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto px-2 py-3 sm:p-4">
         <NavBar 
           title="RV Photos" 
           showBackButton 
@@ -124,20 +124,20 @@ export default function RVPhotosPage() {
   // Show message if no RV exists
   if (!rv) {
     return (
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto px-2 py-3 sm:p-4">
         <NavBar 
           title="RV Photos" 
           showBackButton 
           backUrl="/rv"
         />
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100">
-          <h2 className="text-xl font-semibold text-navy mb-2">No RV Found</h2>
-          <p className="text-gray-700 mb-4">
+          <h2 className="heading mb-2">No RV Found</h2>
+          <p className="text mb-4">
             You need to add your RV details before you can manage photos.
           </p>
           <button
             onClick={() => router.push('/rv/profile?edit=true')}
-            className="px-4 py-2 bg-blue text-white rounded-lg hover:bg-orange transition-colors"
+            className="btn-primary inline-block"
           >
             Add RV Details
           </button>
@@ -148,7 +148,7 @@ export default function RVPhotosPage() {
   
   return (
     <ErrorBoundary>
-      <div className="container mx-auto p-4">
+      <div className="container mx-auto px-2 py-3 sm:p-4">
         <NavBar 
           title="RV Photos" 
           showBackButton 
@@ -157,13 +157,13 @@ export default function RVPhotosPage() {
         
         <div className="mt-8">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-navy">
+            <h1 className="heading text-2xl">
               {rv.year} {rv.make} {rv.model} Photos
             </h1>
             {!showUpload && (
               <button
                 onClick={() => setShowUpload(true)}
-                className="px-4 py-2 bg-blue text-white rounded-lg hover:bg-orange transition-colors flex items-center"
+                className="btn-primary py-2 px-4 sm:px-6 flex items-center justify-center"
               >
                 <svg
                   className="w-5 h-5 mr-2"
