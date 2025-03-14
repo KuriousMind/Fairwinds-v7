@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthenticator } from "@aws-amplify/ui-react";
+import Link from "next/link";
 import PageLayout from "@/components/common/layout/PageLayout";
 import ContentCard from "@/components/common/layout/ContentCard";
 import ButtonGrid from "@/components/common/navigation/ButtonGrid";
@@ -124,7 +125,7 @@ export default function Dashboard() {
       <div className="content-section-spacing">
         <ContentCard
           title="Upcoming Maintenance"
-          actions={<a href="/maintenance/history" className="text-blue-600 text-sm">View All</a>}
+          actions={<Link href="/maintenance/history" className="text-blue-600 text-sm">View All</Link>}
         >
           <div className="space-y-2">
             {/* Sample maintenance items */}

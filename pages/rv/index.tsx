@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import PageLayout from '@/components/common/layout/PageLayout';
 import ContentCard from '@/components/common/layout/ContentCard';
 import ButtonGrid from '@/components/common/navigation/ButtonGrid';
@@ -58,7 +59,7 @@ export default function RVIndex() {
       <div className="content-section-spacing">
         <ContentCard
           title="2014 Airstream Flying Cloud"
-          actions={<a href="/rv/profile?edit=true" className="text-blue-600 text-sm">Edit</a>}
+          actions={<Link href="/rv/profile?edit=true" className="text-blue-600 text-sm">Edit</Link>}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -89,7 +90,7 @@ export default function RVIndex() {
       <div className="content-section-spacing">
         <ContentCard
           title="Photos"
-          actions={<a href="/rv/photos" className="text-blue-600 text-sm">View All</a>}
+          actions={<Link href="/rv/photos" className="text-blue-600 text-sm">View All</Link>}
         >
           <div className="photo-grid grid-cols-3 max-w-full">
             {/* Sample photos */}
@@ -118,7 +119,7 @@ export default function RVIndex() {
                   </svg>
                 </div>
                 <div>
-                  <p className="font-medium">Owner's Manual</p>
+                  <p className="font-medium">Owner&apos;s Manual</p>
                   <p className="text-xs text-gray-500">PDF • 3.2 MB</p>
                 </div>
               </div>

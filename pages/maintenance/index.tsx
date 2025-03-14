@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import PageLayout from '@/components/common/layout/PageLayout';
 import ContentCard from '@/components/common/layout/ContentCard';
 import ButtonGrid from '@/components/common/navigation/ButtonGrid';
@@ -78,7 +79,7 @@ export default function MaintenanceIndex() {
       <div className="content-section-spacing">
         <ContentCard
           title="Upcoming Maintenance"
-          actions={<a href="/maintenance/history" className="text-blue-600 text-sm">View All</a>}
+          actions={<Link href="/maintenance/history" className="text-blue-600 text-sm">View All</Link>}
         >
           <div className="space-y-3">
             <div className="p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
@@ -116,7 +117,7 @@ export default function MaintenanceIndex() {
       <div className="content-section-spacing">
         <ContentCard
           title="Recent Maintenance"
-          actions={<a href="/maintenance/history" className="text-blue-600 text-sm">View All</a>}
+          actions={<Link href="/maintenance/history" className="text-blue-600 text-sm">View All</Link>}
         >
           <div className="space-y-3">
             <div className="p-3 border border-green-200 bg-green-50 rounded-lg">
