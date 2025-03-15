@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { client, handleApiError } from '@/lib/api/amplify';
@@ -226,13 +227,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   };
   
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-navy mb-6">
-        {completeMode 
-          ? 'Mark Maintenance as Completed' 
-          : (maintenanceRecord ? 'Edit Maintenance Record' : 'Add Maintenance Record')}
-      </h2>
-      
+    <div>
       {completeMode && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded">
           <p className="font-medium">You are marking this maintenance record as completed.</p>
@@ -384,10 +379,13 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
               {preview && (
                 <div className="mt-2">
                   <div className="photo-container" style={{ maxHeight: '150px', width: '150px' }}>
-                    <img
+                    <Image
                       src={preview}
                       alt="Preview"
                       className="photo-img"
+                      width={150}
+                      height={150}
+                      style={{ objectFit: 'contain' }}
                     />
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import PageLayout from '@/components/common/layout/PageLayout';
+import ContentCard from '@/components/common/layout/ContentCard';
 import DocumentList from '@/components/rv/DocumentList';
 import DocumentUpload from '@/components/rv/DocumentUpload';
 import LoadingState from '@/components/common/ui/LoadingState';
@@ -100,7 +101,11 @@ export default function RVDocuments() {
         showBackButton
         backUrl="/rv"
       >
-        <LoadingState message="Loading RV information..." />
+        <div className="content-section-spacing">
+          <ContentCard>
+            <LoadingState message="Loading RV information..." />
+          </ContentCard>
+        </div>
       </PageLayout>
     );
   }
@@ -113,17 +118,19 @@ export default function RVDocuments() {
         showBackButton
         backUrl="/rv"
       >
-        <div className="card bg-blue-50 border-blue-100">
-          <h2 className="heading mb-2">No RV Found</h2>
-          <p className="text mb-4">
-            You need to add your RV details before you can manage documents.
-          </p>
-          <button
-            onClick={() => router.push('/rv/profile?edit=true')}
-            className="btn-primary inline-block"
-          >
-            Add RV Details
-          </button>
+        <div className="content-section-spacing">
+          <ContentCard variant="primary">
+            <h2 className="heading mb-2">No RV Found</h2>
+            <p className="text mb-4">
+              You need to add your RV details before you can manage documents.
+            </p>
+            <button
+              onClick={() => router.push('/rv/profile?edit=true')}
+              className="btn-primary inline-block"
+            >
+              Add RV Details
+            </button>
+          </ContentCard>
         </div>
       </PageLayout>
     );
@@ -136,23 +143,43 @@ export default function RVDocuments() {
       backUrl="/rv"
     >
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-          {error}
+        <div className="content-section-spacing">
+          <ContentCard variant="info">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+              {error}
+            </div>
+          </ContentCard>
         </div>
       )}
       
-      {showUploadForm ? (
-        <DocumentUpload
-          rv={rv}
-          onSuccess={handleUploadSuccess}
-          onCancel={handleUploadCancel}
-        />
-      ) : (
-        <DocumentList
-          rv={rv}
-          onAddDocument={() => setShowUploadForm(true)}
-        />
-      )}
+      <div className="content-section-spacing">
+        {showUploadForm ? (
+          <ContentCard title="Upload Document">
+            <DocumentUpload
+              rv={rv}
+              onSuccess={handleUploadSuccess}
+              onCancel={handleUploadCancel}
+            />
+          </ContentCard>
+        ) : (
+          <ContentCard 
+            title="RV Documents"
+            actions={
+              <button
+                onClick={() => setShowUploadForm(true)}
+                className="text-blue-600 text-sm hover:text-orange transition-colors"
+              >
+                Add Document
+              </button>
+            }
+          >
+            <DocumentList
+              rv={rv}
+              onAddDocument={() => setShowUploadForm(true)}
+            />
+          </ContentCard>
+        )}
+      </div>
     </PageLayout>
   );
 }

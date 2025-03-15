@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import PageLayout from '@/components/common/layout/PageLayout';
+import ContentCard from '@/components/common/layout/ContentCard';
 import MaintenanceCard from '@/components/maintenance/MaintenanceCard';
 import LoadingState from '@/components/common/ui/LoadingState';
 import { client, handleApiError } from '@/lib/api/amplify';
@@ -244,33 +245,39 @@ export default function MaintenanceHistory() {
       </div>
       
       {/* Maintenance records list */}
-      {filteredRecords.length > 0 ? (
-        <div className="space-y-3">
-          {filteredRecords.map((record) => (
-            <MaintenanceCard
-              key={record.id}
-              record={record}
-              onView={() => handleViewDetails(record)}
-              onComplete={() => handleComplete(record)}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="card bg-gray-50 border-gray-100 text-center py-8">
-          <h2 className="heading mb-2">No Records Found</h2>
-          <p className="text mb-4">
-            {filter === 'all'
-              ? 'You have not added any maintenance records yet.'
-              : `You have no ${filter} maintenance records.`}
-          </p>
-          <button
-            onClick={() => router.push('/maintenance/new')}
-            className="btn-primary inline-block"
-          >
-            Add Maintenance Record
-          </button>
-        </div>
-      )}
+      <div className="content-section-spacing">
+        {filteredRecords.length > 0 ? (
+          <ContentCard title="Maintenance Records">
+            <div className="space-y-3">
+              {filteredRecords.map((record) => (
+                <MaintenanceCard
+                  key={record.id}
+                  record={record}
+                  onView={() => handleViewDetails(record)}
+                  onComplete={() => handleComplete(record)}
+                />
+              ))}
+            </div>
+          </ContentCard>
+        ) : (
+          <ContentCard>
+            <div className="text-center py-8">
+              <h2 className="heading mb-2">No Records Found</h2>
+              <p className="text mb-4">
+                {filter === 'all'
+                  ? 'You have not added any maintenance records yet.'
+                  : `You have no ${filter} maintenance records.`}
+              </p>
+              <button
+                onClick={() => router.push('/maintenance/new')}
+                className="btn-primary inline-block"
+              >
+                Add Maintenance Record
+              </button>
+            </div>
+          </ContentCard>
+        )}
+      </div>
     </PageLayout>
   );
 }

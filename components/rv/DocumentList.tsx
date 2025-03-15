@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV, Document } from '@/types/models';
 import DocumentCard from './DocumentCard';
@@ -28,13 +28,8 @@ const DocumentList: React.FC<DocumentListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Fetch documents
-  useEffect(() => {
-    fetchDocuments();
-  }, [rv]);
-  
   // Fetch documents for the RV
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     if (!rv) return;
     
     try {
@@ -69,7 +64,12 @@ const DocumentList: React.FC<DocumentListProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [rv]);
+  
+  // Fetch documents
+  useEffect(() => {
+    fetchDocuments();
+  }, [fetchDocuments]);
   
   // Handle document deletion
   const handleDeleteDocument = async (document: Document) => {
@@ -116,13 +116,14 @@ const DocumentList: React.FC<DocumentListProps> = ({
   // Render empty state
   if (documents.length === 0) {
     return (
-      <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="text-center py-8 px-4 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
         <svg
           className="mx-auto h-12 w-12 text-gray-400"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
           aria-hidden="true"
+          style={{ maxWidth: '100%' }}
         >
           <path
             strokeLinecap="round"
@@ -164,14 +165,14 @@ const DocumentList: React.FC<DocumentListProps> = ({
   }
   
   return (
-    <div>
+    <div className="px-1">
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
           {error}
         </div>
       )}
       
-      <div className="space-y-2">
+      <div className="space-y-3">
         {documents.map((document) => (
           <DocumentCard
             key={document.id}

@@ -137,9 +137,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel
   };
   
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-navy mb-6">Upload Document</h2>
-      
+    <div>
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
           {error}
@@ -165,8 +163,8 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel
         
         {selectedFile ? (
           <div className="flex flex-col items-center">
-            <div className="p-4 bg-blue-100 rounded-lg mb-4">
-              <svg className="h-12 w-12 text-blue-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="p-4 bg-blue-100 rounded-lg mb-4 overflow-hidden">
+              <svg className="h-12 w-12 text-blue-700 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ maxWidth: '100%' }}>
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p className="mt-2 font-medium">{selectedFile.name}</p>
@@ -179,12 +177,13 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel
             </p>
           </div>
         ) : (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center overflow-hidden">
             <svg
               className="h-12 w-12 text-gray-400 mb-3"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
+              style={{ maxWidth: '100%' }}
             >
               <path
                 strokeLinecap="round"

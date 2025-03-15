@@ -1,6 +1,7 @@
 import React from 'react';
 import { RV } from '@/types/models';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface RVProfileProps {
   rv: RV | null;
@@ -85,10 +86,13 @@ const RVProfile: React.FC<RVProfileProps> = ({ rv, isLoading }) => {
           <div className="photo-grid grid-cols-3">
             {rv.photos.slice(0, 3).map((photo, index) => (
               <div key={index} className="photo-container">
-                <img 
+                <Image 
                   src={photo} 
                   alt={`RV photo ${index + 1}`} 
                   className="photo-img"
+                  width={300}
+                  height={200}
+                  style={{ objectFit: 'cover' }}
                 />
               </div>
             ))}

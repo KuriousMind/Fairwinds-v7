@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import PageLayout from '@/components/common/layout/PageLayout';
+import ContentCard from '@/components/common/layout/ContentCard';
 import MaintenanceForm from '@/components/maintenance/MaintenanceForm';
 import LoadingState from '@/components/common/ui/LoadingState';
 import { client, handleApiError } from '@/lib/api/amplify';
@@ -169,13 +170,17 @@ export default function MaintenanceNew() {
         </div>
       )}
       
-      <MaintenanceForm 
-        rv={rv}
-        maintenanceRecord={maintenanceRecord}
-        onSuccess={handleFormSuccess}
-        onCancel={handleFormCancel}
-        completeMode={complete === 'true'}
-      />
+      <div className="content-section-spacing">
+        <ContentCard title={maintenanceRecord ? (complete === 'true' ? 'Mark Maintenance as Completed' : 'Edit Maintenance Record') : 'Add Maintenance Record'}>
+          <MaintenanceForm 
+            rv={rv}
+            maintenanceRecord={maintenanceRecord}
+            onSuccess={handleFormSuccess}
+            onCancel={handleFormCancel}
+            completeMode={complete === 'true'}
+          />
+        </ContentCard>
+      </div>
     </PageLayout>
   );
 }

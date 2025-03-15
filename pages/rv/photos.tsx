@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import NavBar from '@/components/common/layout/NavBar';
@@ -28,7 +28,7 @@ export default function RVPhotosPage() {
   const [showUpload, setShowUpload] = useState(false);
   
   // Fetch RV data
-  const fetchRV = async () => {
+  const fetchRV = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -77,12 +77,12 @@ export default function RVPhotosPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
   
   // Initial data fetch
   useEffect(() => {
     fetchRV();
-  }, [user]);
+  }, [user, fetchRV]);
   
   // Handle photo added
   const handlePhotoAdded = () => {

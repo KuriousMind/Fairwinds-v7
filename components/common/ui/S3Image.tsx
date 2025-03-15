@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { getS3Url } from '@/lib/storage/s3';
 import LoadingState from './LoadingState';
 
@@ -75,12 +76,13 @@ const S3Image: React.FC<S3ImageProps> = ({
   }
 
   return (
-    <img 
+    <Image 
       src={imageUrl} 
       alt={alt} 
       className={className}
-      width={width}
-      height={height}
+      width={width || 300}
+      height={height || 200}
+      style={{ width: width ? 'auto' : '100%', height: height ? 'auto' : '100%' }}
     />
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV } from '@/types/models';
 import { compressImage, validateImageFile } from '@/lib/image/compression';
@@ -172,10 +173,13 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ rv, onSuccess, onCancel }) =>
         {preview ? (
           <div className="flex flex-col items-center">
             <div className="photo-container mb-4 rounded" style={{ maxHeight: '200px', width: '200px' }}>
-              <img
+              <Image
                 src={preview}
                 alt="Preview"
                 className="photo-img"
+                width={200}
+                height={200}
+                style={{ objectFit: 'contain', maxHeight: '200px' }}
               />
             </div>
             <p className="text-sm text-gray-500">

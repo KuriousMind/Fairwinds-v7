@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import PageLayout from '@/components/common/layout/PageLayout';
 import ContentCard from '@/components/common/layout/ContentCard';
 import ButtonGrid from '@/components/common/navigation/ButtonGrid';
@@ -281,10 +282,13 @@ export default function RVIndex() {
               <div className="photo-grid grid-cols-3 max-w-full">
                 {rv.photos.slice(0, 3).map((photo, index) => (
                   <div key={index} className="photo-container">
-                    <img 
+                    <Image 
                       src={photo} 
                       alt={`RV photo ${index + 1}`} 
                       className="photo-img"
+                      width={300}
+                      height={200}
+                      style={{ objectFit: 'cover' }}
                     />
                   </div>
                 ))}
