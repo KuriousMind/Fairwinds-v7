@@ -4,6 +4,7 @@ import { useAuthenticator } from '@aws-amplify/ui-react';
 import PageLayout from '@/components/common/layout/PageLayout';
 import ContentCard from '@/components/common/layout/ContentCard';
 import MaintenanceCard from '@/components/maintenance/MaintenanceCard';
+import MaintenanceCalendar from '@/components/maintenance/MaintenanceCalendar';
 import LoadingState from '@/components/common/ui/LoadingState';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV, MaintenanceRecord } from '@/types/models';
@@ -26,8 +27,11 @@ export default function MaintenanceHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Filter state
+  // Filter and view state
   const [filter, setFilter] = useState('all');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [dateRecords, setDateRecords] = useState<MaintenanceRecord[]>([]);
   
   // Fetch RV data
   useEffect(() => {
@@ -147,6 +151,18 @@ export default function MaintenanceHistory() {
     router.push(`/maintenance/new?id=${record.id}&complete=true`);
   };
   
+  // Handle date selection from calendar
+  const handleDateSelect = (date: Date, records: MaintenanceRecord[]) => {
+    setSelectedDate(date);
+    setDateRecords(records);
+  };
+  
+  // Clear date selection
+  const handleClearDateSelection = () => {
+    setSelectedDate(null);
+    setDateRecords([]);
+  };
+  
   // Show loading state
   if (loading) {
     return (
@@ -198,75 +214,90 @@ export default function MaintenanceHistory() {
         </div>
       )}
       
-      {/* Filter tabs */}
+      {/* Filter tabs and view toggle */}
       <div className="mb-4 border-b border-gray-200">
-        <div className="flex flex-wrap -mb-px">
-          <button
-            className={`mr-2 py-2 px-4 text-sm font-medium ${
-              filter === 'all'
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setFilter('all')}
-          >
-            All
-          </button>
-          <button
-            className={`mr-2 py-2 px-4 text-sm font-medium ${
-              filter === 'upcoming'
-                ? 'text-yellow-600 border-b-2 border-yellow-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setFilter('upcoming')}
-          >
-            Upcoming
-          </button>
-          <button
-            className={`mr-2 py-2 px-4 text-sm font-medium ${
-              filter === 'overdue'
-                ? 'text-red-600 border-b-2 border-red-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setFilter('overdue')}
-          >
-            Overdue
-          </button>
-          <button
-            className={`mr-2 py-2 px-4 text-sm font-medium ${
-              filter === 'completed'
-                ? 'text-green-600 border-b-2 border-green-600'
-                : 'text-gray-500 hover:text-gray-700'
-            }`}
-            onClick={() => setFilter('completed')}
-          >
-            Completed
-          </button>
+        <div className="flex justify-between items-center">
+          <div className="flex flex-wrap -mb-px">
+            <button
+              className={`mr-2 py-2 px-4 text-sm font-medium ${
+                filter === 'all'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setFilter('all')}
+            >
+              All
+            </button>
+            <button
+              className={`mr-2 py-2 px-4 text-sm font-medium ${
+                filter === 'upcoming'
+                  ? 'text-yellow-600 border-b-2 border-yellow-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setFilter('upcoming')}
+            >
+              Upcoming
+            </button>
+            <button
+              className={`mr-2 py-2 px-4 text-sm font-medium ${
+                filter === 'overdue'
+                  ? 'text-red-600 border-b-2 border-red-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setFilter('overdue')}
+            >
+              Overdue
+            </button>
+            <button
+              className={`mr-2 py-2 px-4 text-sm font-medium ${
+                filter === 'completed'
+                  ? 'text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setFilter('completed')}
+            >
+              Completed
+            </button>
+          </div>
+          
+          {/* View toggle buttons */}
+          <div className="flex border border-gray-300 rounded-md overflow-hidden">
+            <button
+              className={`px-3 py-1 text-sm ${
+                viewMode === 'list'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+              onClick={() => {
+                setViewMode('list');
+                setSelectedDate(null);
+                setDateRecords([]);
+              }}
+            >
+              List
+            </button>
+            <button
+              className={`px-3 py-1 text-sm ${
+                viewMode === 'calendar'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`}
+              onClick={() => setViewMode('calendar')}
+            >
+              Calendar
+            </button>
+          </div>
         </div>
       </div>
       
-      {/* Maintenance records list */}
+      {/* Maintenance records display - list or calendar view */}
       <div className="content-section-spacing">
-        {filteredRecords.length > 0 ? (
-          <ContentCard title="Maintenance Records">
-            <div className="space-y-3">
-              {filteredRecords.map((record) => (
-                <MaintenanceCard
-                  key={record.id}
-                  record={record}
-                  onView={() => handleViewDetails(record)}
-                  onComplete={() => handleComplete(record)}
-                />
-              ))}
-            </div>
-          </ContentCard>
-        ) : (
+        {maintenanceRecords.length === 0 ? (
           <ContentCard>
             <div className="text-center py-8">
               <h2 className="heading mb-2">No Records Found</h2>
               <p className="text mb-4">
-                {filter === 'all'
-                  ? 'You have not added any maintenance records yet.'
-                  : `You have no ${filter} maintenance records.`}
+                You have not added any maintenance records yet.
               </p>
               <button
                 onClick={() => router.push('/maintenance/new')}
@@ -276,6 +307,79 @@ export default function MaintenanceHistory() {
               </button>
             </div>
           </ContentCard>
+        ) : viewMode === 'calendar' ? (
+          // Calendar view
+          <div>
+            <MaintenanceCalendar 
+              records={filteredRecords}
+              onSelectDate={handleDateSelect}
+            />
+            
+            {/* Selected date records */}
+            {selectedDate && dateRecords.length > 0 && (
+              <div className="mt-4">
+                <ContentCard 
+                  title={`Maintenance on ${selectedDate.toLocaleDateString(undefined, { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}`}
+                  actions={
+                    <button 
+                      onClick={handleClearDateSelection}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      Clear Selection
+                    </button>
+                  }
+                >
+                  <div className="space-y-3">
+                    {dateRecords.map((record) => (
+                      <MaintenanceCard
+                        key={record.id}
+                        record={record}
+                        onView={() => handleViewDetails(record)}
+                        onComplete={() => handleComplete(record)}
+                      />
+                    ))}
+                  </div>
+                </ContentCard>
+              </div>
+            )}
+          </div>
+        ) : (
+          // List view
+          filteredRecords.length > 0 ? (
+            <ContentCard title="Maintenance Records">
+              <div className="space-y-3">
+                {filteredRecords.map((record) => (
+                  <MaintenanceCard
+                    key={record.id}
+                    record={record}
+                    onView={() => handleViewDetails(record)}
+                    onComplete={() => handleComplete(record)}
+                  />
+                ))}
+              </div>
+            </ContentCard>
+          ) : (
+            <ContentCard>
+              <div className="text-center py-8">
+                <h2 className="heading mb-2">No Records Found</h2>
+                <p className="text mb-4">
+                  {filter === 'all'
+                    ? 'You have not added any maintenance records yet.'
+                    : `You have no ${filter} maintenance records.`}
+                </p>
+                <button
+                  onClick={() => router.push('/maintenance/new')}
+                  className="btn-primary inline-block"
+                >
+                  Add Maintenance Record
+                </button>
+              </div>
+            </ContentCard>
+          )
         )}
       </div>
     </PageLayout>

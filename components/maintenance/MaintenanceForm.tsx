@@ -21,6 +21,14 @@ const MAINTENANCE_TYPES = [
   'Other'
 ];
 
+// Recurring types for dropdown selection
+const RECURRING_TYPES = [
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' }
+];
+
 interface MaintenanceFormProps {
   maintenanceRecord?: MaintenanceRecord | null;
   rv: RV;
@@ -59,6 +67,11 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
     date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
     type: completeMode ? 'Completed' : MAINTENANCE_TYPES[0],
     notes: '',
+    // Recurring maintenance fields
+    isRecurring: false,
+    recurringType: 'monthly',
+    recurringInterval: 1,
+    recurringEndDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], // Default to 1 year from now
   });
   
   // Photo upload state
@@ -79,6 +92,12 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
         date: new Date(maintenanceRecord.date).toISOString().split('T')[0],
         type: completeMode ? 'Completed' : (maintenanceRecord.type || MAINTENANCE_TYPES[0]),
         notes: maintenanceRecord.notes || '',
+        // Recurring maintenance fields - use existing values or defaults
+        isRecurring: maintenanceRecord.isRecurring || false,
+        recurringType: maintenanceRecord.recurringType || 'monthly',
+        recurringInterval: maintenanceRecord.recurringInterval || 1,
+        recurringEndDate: maintenanceRecord.recurringEndDate || 
+          new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
       });
       
       if (maintenanceRecord.photos && maintenanceRecord.photos.length > 0) {
@@ -89,8 +108,19 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
   
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type } = e.target;
+    
+    // Handle checkbox inputs
+    if (type === 'checkbox') {
+      const checkbox = e.target as HTMLInputElement;
+      setFormData({ ...formData, [name]: checkbox.checked });
+    } else if (name === 'recurringInterval') {
+      // Ensure recurring interval is a number and at least 1
+      const interval = Math.max(1, parseInt(value) || 1);
+      setFormData({ ...formData, [name]: interval });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
   
   // Handle file selection
@@ -179,28 +209,53 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
         throw new Error('Please fill in all required fields');
       }
       
+      // Validate recurring fields if enabled
+      if (formData.isRecurring) {
+        if (!formData.recurringType || !formData.recurringEndDate) {
+          throw new Error('Please fill in all recurring maintenance fields');
+        }
+        
+        // Validate end date is in the future
+        const endDate = new Date(formData.recurringEndDate);
+        const today = new Date();
+        if (endDate <= today) {
+          throw new Error('End date must be in the future');
+        }
+      }
+      
+      // Prepare record data with recurring fields if enabled
+      const recordData: any = {
+        title: formData.title,
+        date: new Date(formData.date).toISOString(),
+        type: formData.type,
+        notes: formData.notes,
+        photos: photos,
+        rvId: rv.id,
+      };
+      
+      // Add recurring fields if enabled
+      if (formData.isRecurring) {
+        recordData.isRecurring = true;
+        recordData.recurringType = formData.recurringType;
+        recordData.recurringInterval = formData.recurringInterval;
+        recordData.recurringEndDate = formData.recurringEndDate;
+      }
+      
       // Create or update maintenance record
       if (maintenanceRecord) {
         // Update existing maintenance record
         await client.models.MaintenanceRecord.update({
           id: maintenanceRecord.id,
-          title: formData.title,
-          date: new Date(formData.date).toISOString(),
-          type: formData.type,
-          notes: formData.notes,
-          photos: photos,
-          rvId: rv.id,
+          ...recordData,
         });
       } else {
         // Create new maintenance record
-        await client.models.MaintenanceRecord.create({
-          title: formData.title,
-          date: new Date(formData.date).toISOString(),
-          type: formData.type,
-          notes: formData.notes,
-          photos: photos,
-          rvId: rv.id,
-        });
+        const newRecord = await client.models.MaintenanceRecord.create(recordData);
+        
+        // If recurring, create future records
+        if (formData.isRecurring && newRecord.data) {
+          await createRecurringRecords(newRecord.data.id);
+        }
       }
       
       // Success - redirect or callback
@@ -214,6 +269,66 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
       setError(handleApiError(error));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  
+  // Create recurring maintenance records
+  const createRecurringRecords = async (parentId: string) => {
+    try {
+      const baseDate = new Date(formData.date);
+      const endDate = new Date(formData.recurringEndDate);
+      let currentDate = new Date(baseDate);
+      
+      // Generate future dates based on recurrence pattern
+      const futureDates: Date[] = [];
+      
+      while (currentDate < endDate) {
+        // Calculate next date based on recurrence type and interval
+        if (formData.recurringType === 'daily') {
+          currentDate = new Date(currentDate);
+          currentDate.setDate(currentDate.getDate() + formData.recurringInterval);
+        } else if (formData.recurringType === 'weekly') {
+          currentDate = new Date(currentDate);
+          currentDate.setDate(currentDate.getDate() + (7 * formData.recurringInterval));
+        } else if (formData.recurringType === 'monthly') {
+          currentDate = new Date(currentDate);
+          currentDate.setMonth(currentDate.getMonth() + formData.recurringInterval);
+        } else if (formData.recurringType === 'yearly') {
+          currentDate = new Date(currentDate);
+          currentDate.setFullYear(currentDate.getFullYear() + formData.recurringInterval);
+        }
+        
+        // Add to future dates if within end date
+        if (currentDate <= endDate) {
+          futureDates.push(new Date(currentDate));
+        }
+      }
+      
+      // Create future maintenance records (limit to first 10 for performance)
+      const recordsToCreate = futureDates.slice(0, 10);
+      
+      for (const date of recordsToCreate) {
+        // Use type assertion to include parentRecordId
+        const childRecordData: any = {
+          title: formData.title,
+          date: date.toISOString(),
+          type: formData.type,
+          notes: formData.notes,
+          rvId: rv.id,
+          parentRecordId: parentId,
+          isRecurring: false, // Child records are not recurring themselves
+        };
+        
+        await client.models.MaintenanceRecord.create(childRecordData);
+      }
+      
+      // If there are more than 10 future dates, show a message
+      if (futureDates.length > 10) {
+        console.log(`Created 10 of ${futureDates.length} recurring maintenance records.`);
+      }
+    } catch (error) {
+      console.error('Error creating recurring records:', error);
+      // Don't throw error, just log it - the main record was already created
     }
   };
   
@@ -314,6 +429,119 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             placeholder={completeMode ? "Add any completion notes here..." : ""}
           />
         </div>
+        
+        {/* Recurring Maintenance Section */}
+        {!completeMode && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center mb-4">
+              <input
+                type="checkbox"
+                id="isRecurring"
+                name="isRecurring"
+                checked={formData.isRecurring}
+                onChange={handleChange}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="isRecurring" className="ml-2 text-navy font-medium">
+                Recurring Maintenance
+              </label>
+            </div>
+            
+            {formData.isRecurring && (
+              <div className="space-y-4 pl-6">
+                {/* Recurring Type */}
+                <div>
+                  <label htmlFor="recurringType" className="block text-navy font-medium mb-1">
+                    Frequency
+                  </label>
+                  <select
+                    id="recurringType"
+                    name="recurringType"
+                    value={formData.recurringType}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                  >
+                    {RECURRING_TYPES.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Recurring Interval */}
+                <div>
+                  <label htmlFor="recurringInterval" className="block text-navy font-medium mb-1">
+                    Repeat every
+                  </label>
+                  <div className="flex items-center">
+                    <input
+                      type="number"
+                      id="recurringInterval"
+                      name="recurringInterval"
+                      value={formData.recurringInterval}
+                      onChange={handleChange}
+                      min="1"
+                      className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                    />
+                    <span className="ml-2">
+                      {formData.recurringType === 'daily' && 'day(s)'}
+                      {formData.recurringType === 'weekly' && 'week(s)'}
+                      {formData.recurringType === 'monthly' && 'month(s)'}
+                      {formData.recurringType === 'yearly' && 'year(s)'}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Recurring End Date */}
+                <div>
+                  <label htmlFor="recurringEndDate" className="block text-navy font-medium mb-1">
+                    End date
+                  </label>
+                  <input
+                    type="date"
+                    id="recurringEndDate"
+                    name="recurringEndDate"
+                    value={formData.recurringEndDate}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                  />
+                </div>
+                
+                {/* Preview of next occurrences */}
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-md">
+                  <h4 className="text-sm font-medium text-blue-800 mb-2">Next occurrences:</h4>
+                  <ul className="text-sm text-blue-700 space-y-1">
+                    {[...Array(3)].map((_, i) => {
+                      const baseDate = new Date(formData.date);
+                      let nextDate = new Date(baseDate);
+                      
+                      if (formData.recurringType === 'daily') {
+                        nextDate.setDate(baseDate.getDate() + ((i + 1) * formData.recurringInterval));
+                      } else if (formData.recurringType === 'weekly') {
+                        nextDate.setDate(baseDate.getDate() + ((i + 1) * 7 * formData.recurringInterval));
+                      } else if (formData.recurringType === 'monthly') {
+                        nextDate.setMonth(baseDate.getMonth() + ((i + 1) * formData.recurringInterval));
+                      } else if (formData.recurringType === 'yearly') {
+                        nextDate.setFullYear(baseDate.getFullYear() + ((i + 1) * formData.recurringInterval));
+                      }
+                      
+                      return (
+                        <li key={i}>
+                          {nextDate.toLocaleDateString(undefined, { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         
         {/* Photo upload section */}
         <div className="mb-6">

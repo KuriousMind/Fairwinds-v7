@@ -36,6 +36,13 @@ export interface MaintenanceRecord {
   rvId: string;
   rv?: RV;
   documents?: Document[];
+  
+  // Recurring maintenance fields
+  isRecurring?: boolean;
+  recurringType?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  recurringInterval?: number;
+  recurringEndDate?: string;
+  parentRecordId?: string; // For linked recurring records
 }
 
 export interface Document {
