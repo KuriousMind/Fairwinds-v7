@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import NavBar from '@/components/common/layout/NavBar';
+import PageLayout from '@/components/common/layout/PageLayout';
 import PhotoGallery from '@/components/rv/PhotoGallery';
 import PhotoUpload from '@/components/rv/PhotoUpload';
 import LoadingState from '@/components/common/ui/LoadingState';
-import ErrorBoundary from '@/components/common/ui/ErrorBoundary';
 import { client, handleApiError } from '@/lib/api/amplify';
 import { RV } from '@/types/models';
 
@@ -108,29 +107,25 @@ export default function RVPhotosPage() {
   // Show loading state
   if (loading) {
     return (
-      <div className="container mx-auto px-2 py-3 sm:p-4">
-        <NavBar 
-          title="RV Photos" 
-          showBackButton 
-          backUrl="/rv"
-        />
-        <div className="mt-8">
-          <LoadingState message="Loading photos..." />
-        </div>
-      </div>
+      <PageLayout
+        title="RV Photos"
+        showBackButton
+        backUrl="/rv"
+      >
+        <LoadingState message="Loading photos..." />
+      </PageLayout>
     );
   }
   
   // Show message if no RV exists
   if (!rv) {
     return (
-      <div className="container mx-auto px-2 py-3 sm:p-4">
-        <NavBar 
-          title="RV Photos" 
-          showBackButton 
-          backUrl="/rv"
-        />
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-100">
+      <PageLayout
+        title="RV Photos"
+        showBackButton
+        backUrl="/rv"
+      >
+        <div className="p-6 bg-blue-50 rounded-lg border border-blue-100">
           <h2 className="heading mb-2">No RV Found</h2>
           <p className="text mb-4">
             You need to add your RV details before you can manage photos.
@@ -142,21 +137,17 @@ export default function RVPhotosPage() {
             Add RV Details
           </button>
         </div>
-      </div>
+      </PageLayout>
     );
   }
   
   return (
-    <ErrorBoundary>
-      <div className="container mx-auto px-2 py-3 sm:p-4">
-        <NavBar 
-          title="RV Photos" 
-          showBackButton 
-          backUrl="/rv"
-        />
-        
-        <div className="mt-8">
-          <div className="flex justify-between items-center mb-6">
+    <PageLayout
+      title="RV Photos"
+      showBackButton
+      backUrl="/rv"
+    >
+      <div className="flex justify-between items-center mb-6">
             <h1 className="heading text-2xl">
               {rv.year} {rv.make} {rv.model} Photos
             </h1>
@@ -182,31 +173,29 @@ export default function RVPhotosPage() {
                 Add Photo
               </button>
             )}
-          </div>
-          
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-          
-          {/* Show photo upload form or gallery */}
-          {showUpload ? (
-            <PhotoUpload
-              rv={rv}
-              onSuccess={handleUploadSuccess}
-              onCancel={handleUploadCancel}
-            />
-          ) : (
-            <PhotoGallery
-              rv={rv}
-              isLoading={loading}
-              onPhotoAdded={handlePhotoAdded}
-              onPhotoDeleted={handlePhotoDeleted}
-            />
-          )}
-        </div>
       </div>
-    </ErrorBoundary>
+      
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+          {error}
+        </div>
+      )}
+      
+      {/* Show photo upload form or gallery */}
+      {showUpload ? (
+        <PhotoUpload
+          rv={rv}
+          onSuccess={handleUploadSuccess}
+          onCancel={handleUploadCancel}
+        />
+      ) : (
+        <PhotoGallery
+          rv={rv}
+          isLoading={loading}
+          onPhotoAdded={handlePhotoAdded}
+          onPhotoDeleted={handlePhotoDeleted}
+        />
+      )}
+    </PageLayout>
   );
 }

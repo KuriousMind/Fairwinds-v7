@@ -231,7 +231,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
       {completeMode && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded">
           <p className="font-medium">You are marking this maintenance record as completed.</p>
-          <p>Update any details if needed and click "Save" to confirm completion.</p>
+          <p>Update any details if needed and click Save to confirm completion.</p>
         </div>
       )}
       

@@ -26,7 +26,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
 }) => {
   return (
     <ErrorBoundary>
-      <main className="container mx-auto px-2 py-3 sm:p-4 max-w-screen-md flex flex-col min-h-screen">
+      <main className="container mx-auto px-4 py-3 sm:p-6 max-w-screen-md flex flex-col min-h-screen">
         <NavBar 
           title={title} 
           showBackButton={showBackButton} 
