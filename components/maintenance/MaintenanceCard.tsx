@@ -105,8 +105,8 @@ const MaintenanceCard: React.FC<MaintenanceCardProps> = ({
         <div>
           <h3 className={`font-medium ${styles.title}`}>{record.title}</h3>
           <p className="text-sm text-gray-600">{getRelativeTimeDescription()}</p>
-          <p className="text-sm text-gray-500 mt-1">{record.type}</p>
-          {record.notes && <p className="text-sm text-gray-500 mt-1">{record.notes}</p>}
+          <p className="text-sm text-gray-500 mt-2">{record.type}</p>
+          {record.notes && <p className="text-sm text-gray-500 mt-2">{record.notes}</p>}
         </div>
         <div className="flex flex-col items-end">
           <span className={`px-2 py-1 text-xs ${styles.badge} rounded-full mb-2`}>
@@ -135,7 +135,7 @@ const MaintenanceCard: React.FC<MaintenanceCardProps> = ({
       
       {/* Photo preview if available */}
       {record.photos && record.photos.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className="mt-4 pt-3 border-t border-gray-200">
           <div className="photo-grid grid-cols-4 max-w-full">
             {record.photos.slice(0, 3).map((photo, index) => (
               <div key={index} className="photo-container">

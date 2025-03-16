@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  background: linear-gradient(180deg, #F5E6D3, #FFFFFF);
+  background: #F5E6D3;
   display: flex;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   min-height: 100vh;

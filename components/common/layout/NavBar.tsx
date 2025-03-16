@@ -37,7 +37,7 @@ const NavBar: React.FC<NavBarProps> = ({
 
   return (
     <div className="w-full bg-white shadow-md">
-      <div className="container mx-auto px-2 py-2 sm:px-4 sm:py-4">
+      <div className="container mx-auto px-4 py-4 sm:px-6 sm:py-6">
         <div className="py-4">
           {/* Title Section - Centered */}
           <div className="w-full text-center mb-4">
@@ -47,7 +47,7 @@ const NavBar: React.FC<NavBarProps> = ({
           </div>
 
           {/* Navigation Buttons - Centered */}
-          <div className="w-full flex justify-center items-center space-x-1 sm:space-x-2">
+          <div className="w-full flex justify-center items-center space-x-2 sm:space-x-3">
             {showBackButton && (
               <NavButton
                 href={backUrl || ''}

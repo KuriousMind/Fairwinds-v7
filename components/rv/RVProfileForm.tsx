@@ -4,6 +4,19 @@ import { RV } from '@/types/models';
 import { client, handleApiError } from '@/lib/api/amplify';
 import LoadingState from '@/components/common/ui/LoadingState';
 
+// RV types for selection
+const RV_TYPES = [
+  'Class A Motorhome',
+  'Class B Motorhome',
+  'Class C Motorhome',
+  'Fifth Wheel',
+  'Travel Trailer',
+  'Toy Hauler',
+  'Pop-up Camper',
+  'Truck Camper',
+  'Other'
+];
+
 // Common RV makes for auto-complete
 const RV_MAKES = [
   'Airstream', 'Coachmen', 'Dutchmen', 'Entegra', 'Fleetwood', 
@@ -31,7 +44,8 @@ interface RVProfileFormProps {
  * - Form for entering RV details
  * - Auto-complete for make
  * - Year selection
- * - Validation
+ * - RV type selection
+ * - Specifications (length, height, weight)
  * - Create/update functionality
  */
 const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) => {
@@ -44,7 +58,12 @@ const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) 
     make: '',
     model: '',
     year: new Date().getFullYear().toString(),
-    vin: '',
+    type: '',
+    length: '',
+    height: '',
+    width: '',
+    weight: '',
+    licensePlate: '',
     notes: '',
   });
   
@@ -59,8 +78,13 @@ const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) 
         make: rv.make || '',
         model: rv.model || '',
         year: rv.year?.toString() || new Date().getFullYear().toString(),
-        vin: '', // Add VIN field if needed in the future
-        notes: '', // Add notes field if needed in the future
+        type: rv.type || '',
+        length: rv.length?.toString() || '',
+        height: rv.height?.toString() || '',
+        width: rv.width?.toString() || '',
+        weight: rv.weight?.toString() || '',
+        licensePlate: rv.licensePlate || '',
+        notes: rv.notes || '',
       });
     }
   }, [rv]);
@@ -106,23 +130,33 @@ const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) 
         throw new Error('Please fill in all required fields');
       }
       
+      // Prepare RV data
+      const rvData = {
+        make: formData.make,
+        model: formData.model,
+        year: parseInt(formData.year),
+        type: formData.type || undefined,
+        length: formData.length ? parseFloat(formData.length) : undefined,
+        height: formData.height ? parseFloat(formData.height) : undefined,
+        width: formData.width ? parseFloat(formData.width) : undefined,
+        weight: formData.weight ? parseFloat(formData.weight) : undefined,
+        licensePlate: formData.licensePlate || undefined,
+        notes: formData.notes || undefined,
+      };
+      
       // Create or update RV
       if (rv) {
         // Update existing RV
         await client.models.RV.update({
           id: rv.id,
-          make: formData.make,
-          model: formData.model,
-          year: parseInt(formData.year),
+          ...rvData,
           // Keep existing photos
           photos: rv.photos || [],
         });
       } else {
         // Create new RV
         await client.models.RV.create({
-          make: formData.make,
-          model: formData.model,
-          year: parseInt(formData.year),
+          ...rvData,
           userId: userId,
           photos: [],
         });
@@ -159,73 +193,216 @@ const RVProfileForm: React.FC<RVProfileFormProps> = ({ rv, userId, onSuccess }) 
         </div>
       )}
       
-      <form onSubmit={handleSubmit}>
-        {/* Make field with auto-complete */}
-        <div className="mb-4 relative">
-          <label htmlFor="make" className="block text-navy font-medium mb-1">
-            Make <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="make"
-            name="make"
-            value={formData.make}
-            onChange={handleMakeChange}
-            onFocus={() => formData.make && setShowMakeDropdown(true)}
-            onBlur={() => setTimeout(() => setShowMakeDropdown(false), 200)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
-            required
-          />
-          {showMakeDropdown && filteredMakes.length > 0 && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-              {filteredMakes.map((make) => (
-                <div
-                  key={make}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onMouseDown={() => selectMake(make)}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Basic Information Section */}
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-medium text-navy mb-3 border-b pb-2">Basic Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Make field with auto-complete */}
+              <div className="relative">
+                <label htmlFor="make" className="block text-navy font-medium mb-1">
+                  Make <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="make"
+                  name="make"
+                  value={formData.make}
+                  onChange={handleMakeChange}
+                  onFocus={() => formData.make && setShowMakeDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowMakeDropdown(false), 200)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                  required
+                />
+                {showMakeDropdown && filteredMakes.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                    {filteredMakes.map((make) => (
+                      <div
+                        key={make}
+                        className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                        onMouseDown={() => selectMake(make)}
+                      >
+                        {make}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* Model field */}
+              <div>
+                <label htmlFor="model" className="block text-navy font-medium mb-1">
+                  Model <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="model"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                  required
+                />
+              </div>
+              
+              {/* Year field */}
+              <div>
+                <label htmlFor="year" className="block text-navy font-medium mb-1">
+                  Year <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="year"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                  required
                 >
-                  {make}
-                </div>
-              ))}
+                  {YEARS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* RV Type field */}
+              <div>
+                <label htmlFor="type" className="block text-navy font-medium mb-1">
+                  RV Type
+                </label>
+                <select
+                  id="type"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                >
+                  <option value="">Select Type</option>
+                  {RV_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          )}
-        </div>
-        
-        {/* Model field */}
-        <div className="mb-4">
-          <label htmlFor="model" className="block text-navy font-medium mb-1">
-            Model <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="model"
-            name="model"
-            value={formData.model}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
-            required
-          />
-        </div>
-        
-        {/* Year field */}
-        <div className="mb-4">
-          <label htmlFor="year" className="block text-navy font-medium mb-1">
-            Year <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="year"
-            name="year"
-            value={formData.year}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
-            required
-          >
-            {YEARS.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </select>
+          </div>
+          
+          {/* Specifications Section */}
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-medium text-navy mb-3 border-b pb-2">Specifications</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Length field */}
+              <div>
+                <label htmlFor="length" className="block text-navy font-medium mb-1">
+                  Length (ft)
+                </label>
+                <input
+                  type="number"
+                  id="length"
+                  name="length"
+                  value={formData.length}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                />
+              </div>
+              
+              {/* Height field */}
+              <div>
+                <label htmlFor="height" className="block text-navy font-medium mb-1">
+                  Height (ft)
+                </label>
+                <input
+                  type="number"
+                  id="height"
+                  name="height"
+                  value={formData.height}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                />
+              </div>
+              
+              {/* Width field */}
+              <div>
+                <label htmlFor="width" className="block text-navy font-medium mb-1">
+                  Width (ft)
+                </label>
+                <input
+                  type="number"
+                  id="width"
+                  name="width"
+                  value={formData.width}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                />
+              </div>
+              
+              {/* Weight field */}
+              <div>
+                <label htmlFor="weight" className="block text-navy font-medium mb-1">
+                  Weight (lbs)
+                </label>
+                <input
+                  type="number"
+                  id="weight"
+                  name="weight"
+                  value={formData.weight}
+                  onChange={handleChange}
+                  min="0"
+                  step="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Registration Section */}
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-medium text-navy mb-3 border-b pb-2">Registration Information</h3>
+            <div>
+              {/* License Plate field */}
+              <div>
+                <label htmlFor="licensePlate" className="block text-navy font-medium mb-1">
+                  License Plate
+                </label>
+                <input
+                  type="text"
+                  id="licensePlate"
+                  name="licensePlate"
+                  value={formData.licensePlate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Notes Section */}
+          <div className="md:col-span-2">
+            <h3 className="text-lg font-medium text-navy mb-3 border-b pb-2">Additional Information</h3>
+            <div>
+              <label htmlFor="notes" className="block text-navy font-medium mb-1">
+                Notes
+              </label>
+              <textarea
+                id="notes"
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                placeholder="Add any additional information about your RV..."
+              ></textarea>
+            </div>
+          </div>
         </div>
         
         {/* Form actions */}

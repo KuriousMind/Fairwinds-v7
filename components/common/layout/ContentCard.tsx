@@ -36,14 +36,14 @@ const ContentCard: React.FC<ContentCardProps> = ({
     <div className={cardClasses}>
       {/* Card header with title and optional actions */}
       {(title || actions) && (
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-1">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
           {title && <h1 className="heading text-2xl">{title}</h1>}
           {actions && <div className="flex space-x-2">{actions}</div>}
         </div>
       )}
       
       {description && (
-        <p className="text mb-6">
+        <p className="text mb-4">
           {description}
         </p>
       )}

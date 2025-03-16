@@ -16,6 +16,14 @@ const schema = a.schema({
       make: a.string().required(),
       model: a.string().required(),
       year: a.integer().required(),
+      // RV specifications
+      type: a.string(),
+      length: a.float(),
+      height: a.float(),
+      width: a.float(),
+      weight: a.float(),
+      licensePlate: a.string(),
+      notes: a.string(),
       // Array of strings for photos
       photos: a.string().array(),
       // Reference field for User

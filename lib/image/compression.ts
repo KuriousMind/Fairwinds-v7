@@ -5,6 +5,7 @@
  * - Auto-resize to max 1920px dimension (maintaining aspect ratio)
  * - JPEG compression (quality: 0.8)
  * - Uses native browser APIs only, no additional dependencies
+ * - File validation and size formatting
  */
 
 // Maximum dimension for resized images
@@ -115,4 +116,20 @@ export const validateImageFile = (file: File, maxSizeMB = 5): boolean => {
   }
   
   return true;
+};
+
+/**
+ * Formats a file size in bytes to a human-readable string
+ * 
+ * @param bytes - The file size in bytes
+ * @returns A human-readable file size (e.g., "1.5 MB")
+ */
+export const getFormattedFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };

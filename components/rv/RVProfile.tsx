@@ -59,15 +59,53 @@ const RVProfile: React.FC<RVProfileProps> = ({ rv, isLoading }) => {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Basic Information */}
         <div>
-          <h3 className="heading text-lg mb-2">Details</h3>
+          <h3 className="heading text-lg mb-2 border-b pb-1">Basic Information</h3>
           <div className="space-y-2 text">
             <p><span className="font-medium">Make:</span> {rv.make}</p>
             <p><span className="font-medium">Model:</span> {rv.model}</p>
             <p><span className="font-medium">Year:</span> {rv.year}</p>
+            {rv.type && <p><span className="font-medium">Type:</span> {rv.type}</p>}
           </div>
         </div>
+        
+        {/* Specifications */}
+        <div>
+          <h3 className="heading text-lg mb-2 border-b pb-1">Specifications</h3>
+          <div className="space-y-2 text">
+            {rv.length && <p><span className="font-medium">Length:</span> {rv.length} ft</p>}
+            {rv.height && <p><span className="font-medium">Height:</span> {rv.height} ft</p>}
+            {rv.width && <p><span className="font-medium">Width:</span> {rv.width} ft</p>}
+            {rv.weight && <p><span className="font-medium">Weight:</span> {rv.weight.toLocaleString()} lbs</p>}
+            {!rv.length && !rv.height && !rv.width && !rv.weight && (
+              <p className="text-gray-500">No specifications added yet.</p>
+            )}
+          </div>
+        </div>
+        
+        {/* Registration Information */}
+        <div>
+          <h3 className="heading text-lg mb-2 border-b pb-1">Registration</h3>
+          <div className="space-y-2 text">
+            {rv.licensePlate ? (
+              <p><span className="font-medium">License Plate:</span> {rv.licensePlate}</p>
+            ) : (
+              <p className="text-gray-500">No registration information added yet.</p>
+            )}
+          </div>
+        </div>
+        
+        {/* Notes */}
+        {rv.notes && (
+          <div>
+            <h3 className="heading text-lg mb-2 border-b pb-1">Notes</h3>
+            <div className="text">
+              <p className="whitespace-pre-line">{rv.notes}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Photo preview section */}

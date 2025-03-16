@@ -12,6 +12,13 @@ export interface RV {
   make: string;
   model: string;
   year: number;
+  type?: string;
+  length?: number;
+  height?: number;
+  width?: number;
+  weight?: number;
+  licensePlate?: string;
+  notes?: string;
   photos?: string[];
   userId: string;
   owner?: User;

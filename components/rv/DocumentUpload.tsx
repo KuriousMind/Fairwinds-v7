@@ -4,6 +4,18 @@ import { RV, Document } from '@/types/models';
 import { validateDocumentFile, getDocumentTypeName, getFormattedFileSize, ALLOWED_DOCUMENT_TYPES } from '@/lib/document/validation';
 import { uploadToS3 } from '@/lib/storage/s3';
 
+// Predefined document categories for tagging
+const DOCUMENT_CATEGORIES = [
+  'Owner\'s Manual',
+  'Insurance',
+  'Registration',
+  'Maintenance',
+  'Warranty',
+  'Purchase',
+  'Modification',
+  'Other'
+];
+
 interface DocumentUploadProps {
   rv: RV;
   onSuccess: () => void;
@@ -22,6 +34,8 @@ interface DocumentUploadProps {
 const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentTitle, setDocumentTitle] = useState('');
+  const [documentTags, setDocumentTags] = useState<string[]>([]);
+  const [customTag, setCustomTag] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -121,6 +135,7 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel
         type: selectedFile.type,
         url: s3Key,
         rvId: rv.id,
+        tags: documentTags.length > 0 ? documentTags : undefined,
       });
       
       clearInterval(progressInterval);
@@ -202,21 +217,105 @@ const DocumentUpload: React.FC<DocumentUploadProps> = ({ rv, onSuccess, onCancel
         )}
       </div>
       
-      {/* Document title input */}
+      {/* Document title and tags inputs */}
       {selectedFile && (
-        <div className="mt-4">
-          <label htmlFor="documentTitle" className="block text-navy font-medium mb-1">
-            Document Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="documentTitle"
-            value={documentTitle}
-            onChange={(e) => setDocumentTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
-            placeholder="Enter document title"
-            required
-          />
+        <div className="mt-4 space-y-4">
+          {/* Document title */}
+          <div>
+            <label htmlFor="documentTitle" className="block text-navy font-medium mb-1">
+              Document Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="documentTitle"
+              value={documentTitle}
+              onChange={(e) => setDocumentTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+              placeholder="Enter document title"
+              required
+            />
+          </div>
+          
+          {/* Document categories */}
+          <div>
+            <label className="block text-navy font-medium mb-1">
+              Document Category
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {DOCUMENT_CATEGORIES.map(category => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => {
+                    if (documentTags.includes(category)) {
+                      setDocumentTags(documentTags.filter(tag => tag !== category));
+                    } else {
+                      setDocumentTags([...documentTags, category]);
+                    }
+                  }}
+                  className={`px-3 py-1 text-sm rounded-full ${
+                    documentTags.includes(category)
+                      ? 'bg-blue text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Custom tags */}
+          <div>
+            <label htmlFor="customTag" className="block text-navy font-medium mb-1">
+              Custom Tags
+            </label>
+            <div className="flex">
+              <input
+                type="text"
+                id="customTag"
+                value={customTag}
+                onChange={(e) => setCustomTag(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue"
+                placeholder="Add a custom tag"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (customTag.trim() && !documentTags.includes(customTag.trim())) {
+                    setDocumentTags([...documentTags, customTag.trim()]);
+                    setCustomTag('');
+                  }
+                }}
+                disabled={!customTag.trim() || documentTags.includes(customTag.trim())}
+                className="px-3 py-2 bg-blue text-white rounded-r-md hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                Add
+              </button>
+            </div>
+            
+            {/* Display selected custom tags */}
+            {documentTags.filter(tag => !DOCUMENT_CATEGORIES.includes(tag)).length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {documentTags
+                  .filter(tag => !DOCUMENT_CATEGORIES.includes(tag))
+                  .map(tag => (
+                    <div key={tag} className="flex items-center bg-gray-100 px-2 py-1 rounded-full">
+                      <span className="text-sm text-gray-700">{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => setDocumentTags(documentTags.filter(t => t !== tag))}
+                        className="ml-1 text-gray-500 hover:text-red-500"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
       

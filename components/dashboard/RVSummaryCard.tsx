@@ -18,7 +18,7 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
     return (
       <div className="card bg-blue-50 border-blue-100">
         <h2 className="heading mb-2">Welcome to Fairwinds!</h2>
-        <p className="text mb-3">
+        <p className="text mb-4">
           You haven&apos;t added your RV yet. Get started by adding your RV details.
         </p>
         <Link 
@@ -43,15 +43,51 @@ const RVSummaryCard: React.FC<RVSummaryCardProps> = ({ rv }) => {
         <h3 className="heading mb-2">
           {rv.year} {rv.make} {rv.model}
         </h3>
+        
+        {/* RV Type */}
+        {rv.type && (
+          <p className="text-sm text-gray-600 mb-2">
+            {rv.type}
+          </p>
+        )}
+        
+        {/* Key Specifications */}
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          {rv.length && (
+            <div className="bg-blue-50 p-2 rounded">
+              <p className="text-xs text-gray-500">Length</p>
+              <p className="font-medium">{rv.length} ft</p>
+            </div>
+          )}
+          
+          {rv.weight && (
+            <div className="bg-blue-50 p-2 rounded">
+              <p className="text-xs text-gray-500">Weight</p>
+              <p className="font-medium">{rv.weight.toLocaleString()} lbs</p>
+            </div>
+          )}
+        </div>
       </div>
       
       {/* Quick links */}
-      <div className="mt-3 pt-3 border-t border-gray-200">
+      <div className="mt-4 pt-3 border-t border-gray-200 flex flex-col sm:flex-row gap-2">
         <Link 
           href="/rv" 
-          className="btn-secondary text-sm py-2 block text-center"
+          className="btn-secondary text-sm py-2 text-center flex-1"
         >
-          View RV Details
+          View Details
+        </Link>
+        <Link 
+          href="/rv/photos" 
+          className="btn-secondary text-sm py-2 text-center flex-1"
+        >
+          Photos
+        </Link>
+        <Link 
+          href="/rv/documents" 
+          className="btn-secondary text-sm py-2 text-center flex-1"
+        >
+          Documents
         </Link>
       </div>
     </div>

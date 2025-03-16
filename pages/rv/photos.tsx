@@ -104,6 +104,29 @@ export default function RVPhotosPage() {
     fetchRV(); // Refresh RV data to get updated photos
   };
   
+  // Handle photos reordered
+  const handlePhotosReordered = async (photos: string[]) => {
+    if (!rv) return;
+    
+    try {
+      // Update the RV with the new photo order
+      await client.models.RV.update({
+        id: rv.id,
+        photos: photos,
+      });
+      
+      // Update local state
+      setRV({
+        ...rv,
+        photos: photos,
+      });
+    } catch (error) {
+      console.error('Error updating photo order:', error);
+      setError(handleApiError(error));
+      fetchRV(); // Refresh RV data to get original order
+    }
+  };
+  
   // Show loading state
   if (loading) {
     return (
@@ -194,6 +217,7 @@ export default function RVPhotosPage() {
           isLoading={loading}
           onPhotoAdded={handlePhotoAdded}
           onPhotoDeleted={handlePhotoDeleted}
+          onPhotosReordered={handlePhotosReordered}
         />
       )}
     </PageLayout>
