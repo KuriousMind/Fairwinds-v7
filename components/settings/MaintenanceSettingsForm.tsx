@@ -190,7 +190,7 @@ const MaintenanceSettingsForm: React.FC<MaintenanceSettingsFormProps> = ({
               }}
               className="px-3 py-1 mb-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
             >
-              Remove "{selectedType}"
+  Remove &quot;{selectedType}&quot;
             </button>
           )}
         </div>

@@ -273,7 +273,7 @@ const PhotoGallery: React.FC<PhotoGalleryProps> = ({
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedPhoto, selectedPhotoIndex, photos]);
+  }, [selectedPhoto, selectedPhotoIndex, photos, handleNextPhoto, handlePrevPhoto]);
   
   // Render loading state
   if (isLoading) {
