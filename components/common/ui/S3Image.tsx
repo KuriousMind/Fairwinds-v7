@@ -9,6 +9,7 @@ interface S3ImageProps {
   className?: string;
   width?: number;
   height?: number;
+  objectFit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 }
 
 /**
@@ -24,7 +25,8 @@ const S3Image: React.FC<S3ImageProps> = ({
   alt, 
   className = '',
   width,
-  height
+  height,
+  objectFit = 'cover'
 }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,11 @@ const S3Image: React.FC<S3ImageProps> = ({
       className={className}
       width={width || 300}
       height={height || 200}
-      style={{ width: width ? 'auto' : '100%', height: height ? 'auto' : '100%' }}
+      style={{ 
+        objectFit: objectFit,
+        width: '100%',
+        height: '100%'
+      }}
     />
   );
 };

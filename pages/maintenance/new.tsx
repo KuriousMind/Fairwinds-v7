@@ -142,18 +142,18 @@ export default function MaintenanceNew() {
         showBackButton 
         backUrl="/maintenance"
       >
-        <div className="card bg-blue-50 border-blue-100">
-          <h2 className="heading mb-2">No RV Found</h2>
-          <p className="text mb-4">
-            You need to add your RV details before you can create maintenance records.
-          </p>
-          <button
-            onClick={() => router.push('/rv/profile?edit=true')}
-            className="btn-primary inline-block"
-          >
-            Add RV Details
-          </button>
-        </div>
+      <ContentCard variant="primary">
+        <h2 className="heading mb-2">No RV Found</h2>
+        <p className="text mb-4">
+          You need to add your RV details before you can create maintenance records.
+        </p>
+        <button
+          onClick={() => router.push('/rv/profile?edit=true')}
+          className="btn-primary inline-block"
+        >
+          Add RV Details
+        </button>
+      </ContentCard>
       </PageLayout>
     );
   }

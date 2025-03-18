@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import PageLayout from '@/components/common/layout/PageLayout';
+import ContentCard from '@/components/common/layout/ContentCard';
 import PhotoGallery from '@/components/rv/PhotoGallery';
 import PhotoUpload from '@/components/rv/PhotoUpload';
 import LoadingState from '@/components/common/ui/LoadingState';
@@ -148,7 +149,7 @@ export default function RVPhotosPage() {
         showBackButton
         backUrl="/rv"
       >
-        <div className="p-6 bg-blue-50 rounded-lg border border-blue-100">
+        <ContentCard variant="primary">
           <h2 className="heading mb-2">No RV Found</h2>
           <p className="text mb-4">
             You need to add your RV details before you can manage photos.
@@ -159,7 +160,7 @@ export default function RVPhotosPage() {
           >
             Add RV Details
           </button>
-        </div>
+        </ContentCard>
       </PageLayout>
     );
   }
@@ -170,14 +171,35 @@ export default function RVPhotosPage() {
       showBackButton
       backUrl="/rv"
     >
-      <div className="flex justify-between items-center mb-6">
-            <h1 className="heading text-2xl">
-              {rv.year} {rv.make} {rv.model} Photos
-            </h1>
-            {!showUpload && (
+      {error && (
+        <div className="content-section-spacing">
+          <ContentCard variant="info">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
+              {error}
+            </div>
+          </ContentCard>
+        </div>
+      )}
+      
+      {/* Show photo upload form or gallery */}
+      {showUpload ? (
+        <div className="content-section-spacing">
+          <ContentCard title="Upload Photos">
+            <PhotoUpload
+              rv={rv}
+              onSuccess={handleUploadSuccess}
+              onCancel={handleUploadCancel}
+            />
+          </ContentCard>
+        </div>
+      ) : (
+        <div className="content-section-spacing">
+          <ContentCard
+            title={`${rv.year} ${rv.make} ${rv.model} Photos`}
+            actions={
               <button
                 onClick={() => setShowUpload(true)}
-                className="btn-primary py-2 px-4 sm:px-6 flex items-center justify-center"
+                className="btn-primary w-auto flex items-center justify-center"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -195,30 +217,17 @@ export default function RVPhotosPage() {
                 </svg>
                 Add Photo
               </button>
-            )}
-      </div>
-      
-      {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-          {error}
+            }
+          >
+            <PhotoGallery
+              rv={rv}
+              isLoading={loading}
+              onPhotoAdded={handlePhotoAdded}
+              onPhotoDeleted={handlePhotoDeleted}
+              onPhotosReordered={handlePhotosReordered}
+            />
+          </ContentCard>
         </div>
-      )}
-      
-      {/* Show photo upload form or gallery */}
-      {showUpload ? (
-        <PhotoUpload
-          rv={rv}
-          onSuccess={handleUploadSuccess}
-          onCancel={handleUploadCancel}
-        />
-      ) : (
-        <PhotoGallery
-          rv={rv}
-          isLoading={loading}
-          onPhotoAdded={handlePhotoAdded}
-          onPhotoDeleted={handlePhotoDeleted}
-          onPhotosReordered={handlePhotosReordered}
-        />
       )}
     </PageLayout>
   );

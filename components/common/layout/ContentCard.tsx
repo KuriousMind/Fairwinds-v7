@@ -33,17 +33,17 @@ const ContentCard: React.FC<ContentCardProps> = ({
   }[variant];
 
   return (
-    <div className={cardClasses}>
+    <div className={`${cardClasses} overflow-hidden`}>
       {/* Card header with title and optional actions */}
       {(title || actions) && (
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
-          {title && <h1 className="heading text-2xl">{title}</h1>}
+          {title && <h1 className="heading text-2xl break-words">{title}</h1>}
           {actions && <div className="flex space-x-2">{actions}</div>}
         </div>
       )}
       
       {description && (
-        <p className="text mb-4">
+        <p className="text mb-4 break-words">
           {description}
         </p>
       )}

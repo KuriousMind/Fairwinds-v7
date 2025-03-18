@@ -368,7 +368,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+            className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
             required
           />
         </div>
@@ -384,7 +384,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             name="date"
             value={formData.date}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+            className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
             required
           />
         </div>
@@ -399,7 +399,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                    className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
             required
             disabled={completeMode}
           >
@@ -425,7 +425,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
             value={formData.notes}
             onChange={handleChange}
             rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                    className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
             placeholder={completeMode ? "Add any completion notes here..." : ""}
           />
         </div>
@@ -459,7 +459,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                     name="recurringType"
                     value={formData.recurringType}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                    className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
                   >
                     {RECURRING_TYPES.map((type) => (
                       <option key={type.value} value={type.value}>
@@ -482,7 +482,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                       value={formData.recurringInterval}
                       onChange={handleChange}
                       min="1"
-                      className="w-20 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                      className="w-16 px-2 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
                     />
                     <span className="ml-2">
                       {formData.recurringType === 'daily' && 'day(s)'}
@@ -504,7 +504,7 @@ const MaintenanceForm: React.FC<MaintenanceFormProps> = ({
                     name="recurringEndDate"
                     value={formData.recurringEndDate}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+                    className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
                   />
                 </div>
                 

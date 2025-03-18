@@ -184,7 +184,7 @@ export default function MaintenanceHistory() {
         showBackButton 
         backUrl="/maintenance"
       >
-        <div className="card bg-blue-50 border-blue-100">
+        <ContentCard variant="primary">
           <h2 className="heading mb-2">No RV Found</h2>
           <p className="text mb-4">
             You need to add your RV details before you can view maintenance records.
@@ -195,7 +195,7 @@ export default function MaintenanceHistory() {
           >
             Add RV Details
           </button>
-        </div>
+        </ContentCard>
       </PageLayout>
     );
   }
@@ -215,7 +215,7 @@ export default function MaintenanceHistory() {
       )}
       
       {/* Filter tabs and view toggle */}
-      <div className="mb-4 border-b border-gray-200">
+      <div className="content-section-spacing border-b border-gray-200">
         <div className="flex justify-between items-center">
           <div className="flex flex-wrap -mb-px">
             <button

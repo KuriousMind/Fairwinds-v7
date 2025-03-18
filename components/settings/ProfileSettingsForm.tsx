@@ -113,7 +113,7 @@ const ProfileSettingsForm: React.FC<ProfileSettingsFormProps> = ({
           name="displayName"
           value={formData.displayName}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
+          className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
           placeholder="Enter your display name"
         />
       </div>
@@ -143,8 +143,8 @@ const ProfileSettingsForm: React.FC<ProfileSettingsFormProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end">
           {/* Success message - positioned near the button */}
           {successMessage && (
-            <div className="mb-3 sm:mb-0 sm:mr-4 p-2 bg-green-50 border border-green-200 text-green-700 rounded-md flex items-center animate-fade-in">
-              <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div className="mb-3 sm:mb-0 sm:mr-4 p-2 text-sm bg-green-50 border border-green-200 text-green-700 rounded-md flex items-center animate-fade-in">
+              <svg className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
               {successMessage}
