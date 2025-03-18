@@ -112,11 +112,11 @@ const MaintenanceCard: React.FC<MaintenanceCardProps> = ({
           <span className={`px-2 py-1 text-xs ${styles.badge} rounded-full mb-2`}>
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
-          <div className="space-x-2">
+          <div className="space-x-2 flex">
             {onView && (
               <button 
                 onClick={onView}
-                className="text-blue-600 text-sm hover:text-orange transition-colors"
+                className="btn-primary text-sm px-2 py-1 h-auto text-white"
               >
                 View Details
               </button>
@@ -124,7 +124,7 @@ const MaintenanceCard: React.FC<MaintenanceCardProps> = ({
             {status !== 'completed' && onComplete && (
               <button 
                 onClick={onComplete}
-                className="text-blue-600 text-sm hover:text-orange transition-colors"
+                className="btn-primary text-sm px-2 py-1 h-auto text-white ml-2"
               >
                 Complete
               </button>

@@ -388,6 +388,14 @@ UI elements should be consistent across the application to create a cohesive exp
 - Secondary: White background, navy text, gray border
 - Hover states: Orange background for primary, light gray for secondary
 
+##### Buttons in Colored Containers
+
+When placing buttons within colored containers (such as status cards, alerts, or colored backgrounds):
+- Always use the primary button style (blue background with white text) for action buttons
+- This ensures proper contrast and readability regardless of the container's background color
+- For smaller buttons in tight spaces, you can adjust the padding and font size while maintaining the primary button colors
+- Example implementation for smaller buttons: `className="btn-primary text-sm px-2 py-1 h-auto text-white"`
+
 #### Form Controls
 
 - Consistent input styling with light gray border

@@ -27,8 +27,7 @@ export default function MaintenanceHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Filter and view state
-  const [filter, setFilter] = useState('all');
+  // View state
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dateRecords, setDateRecords] = useState<MaintenanceRecord[]>([]);
@@ -116,26 +115,9 @@ export default function MaintenanceHistory() {
     }
   };
   
-  // Filter records based on status
-  const getFilteredRecords = () => {
-    if (filter === 'all') {
-      return maintenanceRecords;
-    }
-    
-    return maintenanceRecords.filter(record => {
-      const recordDate = new Date(record.date);
-      const today = new Date();
-      
-      if (filter === 'completed') {
-        return record.type.toLowerCase().includes('completed');
-      } else if (filter === 'overdue') {
-        return !record.type.toLowerCase().includes('completed') && recordDate < today;
-      } else if (filter === 'upcoming') {
-        return !record.type.toLowerCase().includes('completed') && recordDate >= today;
-      }
-      
-      return true;
-    });
+  // Get all records
+  const getAllRecords = () => {
+    return maintenanceRecords;
   };
   
   // Handle view details
@@ -200,7 +182,7 @@ export default function MaintenanceHistory() {
     );
   }
   
-  const filteredRecords = getFilteredRecords();
+  // No need for filtered records anymore as we're showing all records
   
   return (
     <PageLayout 
@@ -214,58 +196,15 @@ export default function MaintenanceHistory() {
         </div>
       )}
       
-      {/* Filter tabs and view toggle */}
+      {/* View toggle */}
       <div className="content-section-spacing border-b border-gray-200">
-        <div className="flex justify-between items-center">
-          <div className="flex flex-wrap -mb-px">
-            <button
-              className={`mr-2 py-2 px-4 text-sm font-medium ${
-                filter === 'all'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setFilter('all')}
-            >
-              All
-            </button>
-            <button
-              className={`mr-2 py-2 px-4 text-sm font-medium ${
-                filter === 'upcoming'
-                  ? 'text-yellow-600 border-b-2 border-yellow-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setFilter('upcoming')}
-            >
-              Upcoming
-            </button>
-            <button
-              className={`mr-2 py-2 px-4 text-sm font-medium ${
-                filter === 'overdue'
-                  ? 'text-red-600 border-b-2 border-red-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setFilter('overdue')}
-            >
-              Overdue
-            </button>
-            <button
-              className={`mr-2 py-2 px-4 text-sm font-medium ${
-                filter === 'completed'
-                  ? 'text-green-600 border-b-2 border-green-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setFilter('completed')}
-            >
-              Completed
-            </button>
-          </div>
-          
+        <div className="flex justify-end items-center pb-2">
           {/* View toggle buttons */}
           <div className="flex border border-gray-300 rounded-md overflow-hidden">
             <button
               className={`px-3 py-1 text-sm ${
                 viewMode === 'list'
-                  ? 'bg-blue-100 text-blue-800'
+                  ? 'btn-primary text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
               }`}
               onClick={() => {
@@ -279,7 +218,7 @@ export default function MaintenanceHistory() {
             <button
               className={`px-3 py-1 text-sm ${
                 viewMode === 'calendar'
-                  ? 'bg-blue-100 text-blue-800'
+                  ? 'btn-primary text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
               }`}
               onClick={() => setViewMode('calendar')}
@@ -311,7 +250,7 @@ export default function MaintenanceHistory() {
           // Calendar view
           <div>
             <MaintenanceCalendar 
-              records={filteredRecords}
+              records={getAllRecords()}
               onSelectDate={handleDateSelect}
             />
             
@@ -327,7 +266,7 @@ export default function MaintenanceHistory() {
                   actions={
                     <button 
                       onClick={handleClearDateSelection}
-                      className="text-sm text-blue-600 hover:text-blue-800"
+                      className="btn-primary text-sm px-2 py-1 h-auto text-white"
                     >
                       Clear Selection
                     </button>
@@ -349,37 +288,18 @@ export default function MaintenanceHistory() {
           </div>
         ) : (
           // List view
-          filteredRecords.length > 0 ? (
-            <ContentCard title="Maintenance Records">
-              <div className="space-y-3">
-                {filteredRecords.map((record) => (
-                  <MaintenanceCard
-                    key={record.id}
-                    record={record}
-                    onView={() => handleViewDetails(record)}
-                    onComplete={() => handleComplete(record)}
-                  />
-                ))}
-              </div>
-            </ContentCard>
-          ) : (
-            <ContentCard>
-              <div className="text-center py-8">
-                <h2 className="heading mb-2">No Records Found</h2>
-                <p className="text mb-4">
-                  {filter === 'all'
-                    ? 'You have not added any maintenance records yet.'
-                    : `You have no ${filter} maintenance records.`}
-                </p>
-                <button
-                  onClick={() => router.push('/maintenance/new')}
-                  className="btn-primary inline-block"
-                >
-                  Add Maintenance Record
-                </button>
-              </div>
-            </ContentCard>
-          )
+          <ContentCard title="Maintenance Records">
+            <div className="space-y-3">
+              {getAllRecords().map((record) => (
+                <MaintenanceCard
+                  key={record.id}
+                  record={record}
+                  onView={() => handleViewDetails(record)}
+                  onComplete={() => handleComplete(record)}
+                />
+              ))}
+            </div>
+          </ContentCard>
         )}
       </div>
     </PageLayout>

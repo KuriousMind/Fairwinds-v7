@@ -11,44 +11,32 @@ interface MaintenanceCalendarProps {
  * 
  * Features:
  * - Monthly calendar view
- * - Highlights dates with maintenance records
- * - Shows record counts on each date
- * - Allows clicking on a date to view records for that day
+ * - Shows maintenance records grouped by month
+ * - Allows selecting a month to view all records for that month
  */
 const MaintenanceCalendar: React.FC<MaintenanceCalendarProps> = ({
   records,
   onSelectDate,
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
   
-  // Get days in month
-  const getDaysInMonth = (year: number, month: number) => {
-    return new Date(year, month + 1, 0).getDate();
-  };
-  
-  // Get day of week for first day of month (0 = Sunday, 6 = Saturday)
-  const getFirstDayOfMonth = (year: number, month: number) => {
-    return new Date(year, month, 1).getDay();
-  };
-  
-  // Get records for a specific date
-  const getRecordsForDate = (date: Date) => {
+  // Get records for a specific month
+  const getRecordsForMonth = (date: Date) => {
     return records.filter(record => {
       const recordDate = new Date(record.date);
       return (
         recordDate.getFullYear() === date.getFullYear() &&
-        recordDate.getMonth() === date.getMonth() &&
-        recordDate.getDate() === date.getDate()
+        recordDate.getMonth() === date.getMonth()
       );
     });
   };
   
-  // Get status class for a date based on records
-  const getDateStatusClass = (date: Date) => {
-    const dateRecords = getRecordsForDate(date);
+  // Get status class for a month based on records
+  const getMonthStatusClass = (date: Date) => {
+    const monthRecords = getRecordsForMonth(date);
     
-    if (dateRecords.length === 0) {
+    if (monthRecords.length === 0) {
       return '';
     }
     
@@ -56,19 +44,19 @@ const MaintenanceCalendar: React.FC<MaintenanceCalendarProps> = ({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const hasOverdue = dateRecords.some(record => {
+    const hasOverdue = monthRecords.some(record => {
       const recordDate = new Date(record.date);
       recordDate.setHours(0, 0, 0, 0);
       return !record.type.toLowerCase().includes('completed') && recordDate < today;
     });
     
     // Check if any records are completed
-    const hasCompleted = dateRecords.some(record => 
+    const hasCompleted = monthRecords.some(record => 
       record.type.toLowerCase().includes('completed')
     );
     
     // Check if any records are upcoming
-    const hasUpcoming = dateRecords.some(record => {
+    const hasUpcoming = monthRecords.some(record => {
       const recordDate = new Date(record.date);
       recordDate.setHours(0, 0, 0, 0);
       return !record.type.toLowerCase().includes('completed') && recordDate >= today;
@@ -85,98 +73,95 @@ const MaintenanceCalendar: React.FC<MaintenanceCalendarProps> = ({
     return '';
   };
   
-  // Handle date click
-  const handleDateClick = (date: Date) => {
-    const dateRecords = getRecordsForDate(date);
-    setSelectedDate(date);
+  // Handle month click
+  const handleMonthClick = (date: Date) => {
+    const monthRecords = getRecordsForMonth(date);
+    setSelectedMonth(date);
     
-    if (onSelectDate && dateRecords.length > 0) {
-      onSelectDate(date, dateRecords);
+    if (onSelectDate && monthRecords.length > 0) {
+      onSelectDate(date, monthRecords);
     }
   };
   
-  // Navigate to previous month
-  const handlePrevMonth = () => {
+  // Navigate to previous year
+  const handlePrevYear = () => {
     setCurrentMonth(prev => {
-      const prevMonth = new Date(prev);
-      prevMonth.setMonth(prev.getMonth() - 1);
-      return prevMonth;
+      const prevYear = new Date(prev);
+      prevYear.setFullYear(prev.getFullYear() - 1);
+      return prevYear;
     });
   };
   
-  // Navigate to next month
-  const handleNextMonth = () => {
+  // Navigate to next year
+  const handleNextYear = () => {
     setCurrentMonth(prev => {
-      const nextMonth = new Date(prev);
-      nextMonth.setMonth(prev.getMonth() + 1);
-      return nextMonth;
+      const nextYear = new Date(prev);
+      nextYear.setFullYear(prev.getFullYear() + 1);
+      return nextYear;
     });
   };
   
-  // Navigate to current month
-  const handleCurrentMonth = () => {
+  // Navigate to current year
+  const handleCurrentYear = () => {
     setCurrentMonth(new Date());
   };
   
-  // Render calendar
-  const renderCalendar = () => {
+  // Render year calendar with months
+  const renderYearCalendar = () => {
     const year = currentMonth.getFullYear();
-    const month = currentMonth.getMonth();
+    const currentDate = new Date();
+    const monthCells = [];
     
-    const daysInMonth = getDaysInMonth(year, month);
-    const firstDayOfMonth = getFirstDayOfMonth(year, month);
-    
-    // Create array of day cells
-    const dayCells = [];
-    
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayOfMonth; i++) {
-      dayCells.push(
-        <div key={`empty-${i}`} className="h-24 border border-gray-200 bg-gray-50"></div>
-      );
-    }
-    
-    // Add cells for each day of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateRecords = getRecordsForDate(date);
-      const statusClass = getDateStatusClass(date);
-      const isToday = new Date().toDateString() === date.toDateString();
-      const isSelected = selectedDate && selectedDate.toDateString() === date.toDateString();
+    // Add cells for each month of the year
+    for (let month = 0; month < 12; month++) {
+      const date = new Date(year, month, 1);
+      const monthRecords = getRecordsForMonth(date);
+      const statusClass = getMonthStatusClass(date);
+      const isCurrentMonth = currentDate.getFullYear() === year && currentDate.getMonth() === month;
+      const isSelected = selectedMonth && 
+                         selectedMonth.getFullYear() === year && 
+                         selectedMonth.getMonth() === month;
       
-      dayCells.push(
+      monthCells.push(
         <div
-          key={`day-${day}`}
-          className={`h-24 border border-gray-200 p-1 cursor-pointer transition-colors ${
-            isToday ? 'border-blue-500 border-2' : ''
+          key={`month-${month}`}
+          className={`border border-gray-200 p-3 cursor-pointer transition-colors ${
+            isCurrentMonth ? 'border-blue-500 border-2' : ''
           } ${
             isSelected ? 'ring-2 ring-blue-500' : ''
           } ${statusClass || 'hover:bg-gray-100'}`}
-          onClick={() => handleDateClick(date)}
+          onClick={() => handleMonthClick(date)}
         >
-          <div className="flex justify-between items-start">
-            <span className={`text-sm font-medium ${isToday ? 'text-blue-600' : ''}`}>
-              {day}
+          <div className="flex justify-between items-center">
+            <span className={`font-medium ${isCurrentMonth ? 'text-blue-600' : ''}`}>
+              {date.toLocaleString('default', { month: 'long' })}
             </span>
-            {dateRecords.length > 0 && (
+            {monthRecords.length > 0 && (
               <span className="text-xs font-medium bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center">
-                {dateRecords.length}
+                {monthRecords.length}
               </span>
             )}
           </div>
           
-          {/* Show first record title if available */}
-          {dateRecords.length > 0 && (
-            <div className="mt-1 text-xs truncate">
-              {dateRecords[0].title}
-              {dateRecords.length > 1 && <span> +{dateRecords.length - 1} more</span>}
+          {/* Show summary of records if available */}
+          {monthRecords.length > 0 && (
+            <div className="mt-2 text-xs">
+              <div className="font-medium">Top items:</div>
+              <ul className="mt-1 space-y-1">
+                {monthRecords.slice(0, 2).map((record, idx) => (
+                  <li key={idx} className="truncate">{record.title}</li>
+                ))}
+                {monthRecords.length > 2 && (
+                  <li className="text-gray-500">+{monthRecords.length - 2} more</li>
+                )}
+              </ul>
             </div>
           )}
         </div>
       );
     }
     
-    return dayCells;
+    return monthCells;
   };
   
   return (
@@ -184,29 +169,29 @@ const MaintenanceCalendar: React.FC<MaintenanceCalendarProps> = ({
       {/* Calendar header */}
       <div className="p-4 flex justify-between items-center bg-gray-50 border-b">
         <h2 className="text-lg font-medium text-navy">
-          {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          {currentMonth.getFullYear()}
         </h2>
         <div className="flex space-x-2">
           <button
-            onClick={handlePrevMonth}
+            onClick={handlePrevYear}
             className="p-1 rounded-full hover:bg-gray-200"
-            title="Previous month"
+            title="Previous year"
           >
             <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
-            onClick={handleCurrentMonth}
-            className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
-            title="Current month"
+            onClick={handleCurrentYear}
+            className="btn-primary text-xs px-2 py-1 h-auto text-white rounded"
+            title="Current year"
           >
-            Today
+            This Year
           </button>
           <button
-            onClick={handleNextMonth}
+            onClick={handleNextYear}
             className="p-1 rounded-full hover:bg-gray-200"
-            title="Next month"
+            title="Next year"
           >
             <svg className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -215,20 +200,10 @@ const MaintenanceCalendar: React.FC<MaintenanceCalendarProps> = ({
         </div>
       </div>
       
-      {/* Calendar grid */}
-      <div className="p-2">
-        {/* Day headers */}
-        <div className="grid grid-cols-7 gap-1 mb-1">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 py-1">
-              {day}
-            </div>
-          ))}
-        </div>
-        
-        {/* Calendar days */}
-        <div className="grid grid-cols-7 gap-1">
-          {renderCalendar()}
+      {/* Calendar grid - months only */}
+      <div className="p-4">
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+          {renderYearCalendar()}
         </div>
       </div>
       
@@ -248,7 +223,7 @@ const MaintenanceCalendar: React.FC<MaintenanceCalendarProps> = ({
         </div>
         <div className="flex items-center">
           <span className="w-3 h-3 border border-blue-500 border-2 rounded-full mr-1"></span>
-          <span>Today</span>
+          <span>Current Month</span>
         </div>
       </div>
     </div>
