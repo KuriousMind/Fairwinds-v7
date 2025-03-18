@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useAuthenticator } from '@aws-amplify/ui-react';
 import { client, handleApiError } from '@/lib/api/amplify';
 
+// Array of joke messages for kilometers selection
+const KILOMETER_JOKE_MESSAGES = [
+  "Kilometers? What's next, driving on the left side of the road? This is America!",
+  "Kilometers detected. Bald eagle disappointment imminent.",
+  "Sorry, we measure distance in football fields and cheeseburgers here.",
+  "Kilometers? George Washington didn't cross the Delaware in kilometers.",
+  "Your request to use kilometers has been reported to the Department of Freedom.",
+  "Kilometers? (Star-Spangled Banner intensifies)",
+  "Warning: Your device is exhibiting signs of metric system propaganda. Prescribing miles as treatment.",
+  "Kilometers? That's cute. Did you also want your temperature in Celsius and your soda in liters?",
+  "According to the Constitution, Americans have the right to bear arms and use miles.",
+  "Kilometers not recognized. Please input distance in 'eagles per monster truck' instead.",
+  "We can put a man on the moon but we can't figure out the metric system. Choose miles.",
+  "Your GPS is experiencing a freedom deficiency. Switching to miles..."
+];
+
 interface DisplaySettingsFormProps {
   initialSettings?: {
     units?: 'miles' | 'kilometers';
@@ -33,9 +49,24 @@ const DisplaySettingsForm: React.FC<DisplaySettingsFormProps> = ({
     dateFormat: initialSettings.dateFormat || 'MM/DD/YYYY',
   });
   
+  // Function to get a random joke message
+  const getRandomJokeMessage = () => {
+    const randomIndex = Math.floor(Math.random() * KILOMETER_JOKE_MESSAGES.length);
+    return KILOMETER_JOKE_MESSAGES[randomIndex];
+  };
+
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Special handling for kilometers selection
+    if (name === 'units' && value === 'kilometers') {
+      // Show joke message
+      alert(getRandomJokeMessage());
+      // Don't update state - keep miles selected
+      return;
+    }
+    
     setFormData({ 
       ...formData, 
       [name]: value 

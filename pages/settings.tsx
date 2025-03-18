@@ -28,7 +28,7 @@ export default function Settings() {
       notificationsEnabled: true,
     },
     maintenance: {
-      reminderDays: 7,
+      reminderDays: 14,
       maintenanceTypes: [] as string[],
     },
     display: {
@@ -52,7 +52,7 @@ export default function Settings() {
             notificationsEnabled: true,
           },
           maintenance: {
-            reminderDays: 7,
+            reminderDays: 14,
             maintenanceTypes: [
               'Regular Service',
               'Repair',

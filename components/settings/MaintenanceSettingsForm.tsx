@@ -41,9 +41,12 @@ const MaintenanceSettingsForm: React.FC<MaintenanceSettingsFormProps> = ({
   
   // Form state
   const [formData, setFormData] = useState({
-    reminderDays: initialSettings.reminderDays || 7,
+    reminderDays: initialSettings.reminderDays || 14,
     maintenanceTypes: initialSettings.maintenanceTypes || [...DEFAULT_MAINTENANCE_TYPES],
   });
+  
+  // Selected maintenance type for dropdown
+  const [selectedType, setSelectedType] = useState<string | null>(null);
   
   // New maintenance type input
   const [newType, setNewType] = useState('');
@@ -148,12 +151,9 @@ const MaintenanceSettingsForm: React.FC<MaintenanceSettingsFormProps> = ({
           onChange={handleChange}
           className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue"
         >
-          <option value={7}>1 week before</option>
           <option value={14}>2 weeks before</option>
-          <option value={21}>3 weeks before</option>
-          <option value={30}>1 month before</option>
-          <option value={60}>2 months before</option>
-          <option value={90}>3 months before</option>
+          <option value={28}>4 weeks before</option>
+          <option value={42}>6 weeks before</option>
         </select>
         <p className="text-sm text-gray-500 mt-1">
           When to send reminders for upcoming maintenance tasks.
@@ -166,23 +166,33 @@ const MaintenanceSettingsForm: React.FC<MaintenanceSettingsFormProps> = ({
           Maintenance Categories
         </label>
         
-        <div className="mb-2 flex flex-wrap gap-2">
-          {formData.maintenanceTypes.map((type, index) => (
-            <div 
-              key={index}
-              className="bg-gray-100 px-3 py-1 rounded-full flex items-center"
+        <div className="mb-2">
+          <select
+            className="w-full px-2 py-2 sm:px-3 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue mb-2"
+            value={selectedType || ''}
+            onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <option value="" disabled>Select a category</option>
+            {formData.maintenanceTypes.map((type, index) => (
+              <option key={index} value={type}>{type}</option>
+            ))}
+          </select>
+          
+          {selectedType && (
+            <button
+              type="button"
+              onClick={() => {
+                const index = formData.maintenanceTypes.indexOf(selectedType);
+                if (index !== -1) {
+                  handleRemoveType(index);
+                  setSelectedType(null);
+                }
+              }}
+              className="px-3 py-1 mb-2 text-sm bg-red-100 text-red-700 rounded-md hover:bg-red-200"
             >
-              <span className="mr-2">{type}</span>
-              <button
-                type="button"
-                onClick={() => handleRemoveType(index)}
-                className="text-gray-500 hover:text-red-500"
-                aria-label={`Remove ${type}`}
-              >
-                ×
-              </button>
-            </div>
-          ))}
+              Remove "{selectedType}"
+            </button>
+          )}
         </div>
         
         <div className="flex">
